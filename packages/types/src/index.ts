@@ -1,54 +1,149 @@
+// ---------- Enums / union types ----------
+
 export type CourseCategory =
-  | 'ingenieria'
-  | 'gestion'
-  | 'tecnologia'
-  | 'finanzas'
-  | 'habilidades-blandas';
+  | 'Ingeniería'
+  | 'Gestión'
+  | 'Tecnología'
+  | 'Habilidades Blandas'
+  | 'Finanzas';
+
+export type CourseModality = 'Virtual' | 'Presencial' | 'Híbrido';
+
+export type CourseLevel = 'Básico' | 'Intermedio' | 'Avanzado';
+
+export type CourseStatus = 'published' | 'draft' | 'review';
+
+export type UserRole = 'admin' | 'student';
+
+// ---------- Plana docente ----------
+
+export interface Instructor {
+  id: string;
+  name: string;
+  title: string;
+  bio: string;
+  photoUrl: string;
+}
+
+// ---------- Sílabo ----------
+
+export interface SyllabusModule {
+  id: string;
+  title: string;
+  topics: string[];
+}
+
+// ---------- Curso ----------
 
 export interface Course {
   id: string;
-  title: string;
   slug: string;
-  description: string;
+  title: string;
   category: CourseCategory;
-  modality: 'virtual' | 'presencial' | 'hibrido';
-  hours: number;
+  modality: CourseModality;
+  level: CourseLevel;
+  shortDescription: string;
+  description: string;
   price: number;
-  originalPrice?: number;
-  imageUrl?: string;
-  syllabusUrl?: string;
-  instructor?: string;
-  enrolledCount?: number;
-  status: 'published' | 'draft' | 'review';
-  moodleCourseId?: string;
-  createdAt: string;
+  originalPrice: number | null;
+  imageUrl: string;
+  academicHours: number;
+  certification: string;
+  rating: number;
+  enrolledCount: number;
+  moodleCourseId: number | null; //TODO(backend): confirmar contrato — integración Moodle Fase 6
+  syllabusPdfUrl: string;
+  status: CourseStatus;
+  graduateProfile: string[];
+  syllabus: SyllabusModule[];
+  instructors: Instructor[];
+  benefits: string[];
   updatedAt: string;
+  createdAt: string;
 }
+
+// ---------- Usuario ----------
 
 export interface User {
   id: string;
+  name: string;
   email: string;
-  fullName: string;
-  role: 'student' | 'admin';
+  role: UserRole;
+  avatarUrl: string;
+}
+
+// ---------- Carrito ----------
+
+export interface CartItem {
+  courseId: string;
+  title: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
+}
+
+// ---------- Lead / Contacto ----------
+
+export interface ContactLead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  courseInterest: string | null;
+  message: string;
   createdAt: string;
 }
 
-export interface ContactForm {
-  fullName: string;
-  email: string;
-  phone?: string;
-  message: string;
-  courseInterest?: string;
-}
+// ---------- Ventas (transaccional) ----------
 
 export interface Sale {
   id: string;
-  userId: string;
   courseId: string;
+  courseName: string;
+  userId: string;
   amount: number;
+  date: string; // ISO datetime, ej. "2024-10-24T14:30:00Z"
   status: 'completed' | 'pending' | 'refunded';
-  createdAt: string;
 }
+
+// ---------- Reporte de ventas (admin) ----------
+
+export interface SalesKpis {
+  totalSales: number;
+  totalRevenue: number;
+  conversionRate: number;
+  salesDeltaPct: number;
+  revenueDeltaPct: number;
+  conversionDeltaPct: number;
+}
+
+export interface SalesTrendPoint {
+  label: string;
+  revenue: number;
+}
+
+export interface CourseSalesBreakdown {
+  courseId: string;
+  courseName: string;
+  salesCount: number;
+  revenue: number;
+  lastTransaction: string; // ISO datetime, mismo formato que Sale.date
+}
+
+export interface SalesReport {
+  kpis: SalesKpis;
+  trend: SalesTrendPoint[];
+  breakdown: CourseSalesBreakdown[];
+}
+
+// ---------- Respuesta de autenticación ----------
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+// ---------- Wrappers de respuesta de API ----------
 
 export interface ApiResponse<T> {
   data: T;
@@ -56,9 +151,9 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-export interface PaginatedResponse<T> {
+export interface Paginated<T> {
   data: T[];
-  total: number;
   page: number;
-  limit: number;
+  pageSize: number;
+  total: number;
 }
