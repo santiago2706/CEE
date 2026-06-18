@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import type { Course, CourseCategory, CourseModality } from '@cee/types';
 import { FilterSidebar } from '@/components/catalog/FilterSidebar';
 import type { FilterState } from '@/components/catalog/FilterSidebar';
@@ -155,15 +155,6 @@ export default function CatalogPage() {
     setSortBy('relevance');
     setPage(1);
   }
-  /**
-   * Eliminar un tag aplica inmediatamente (sin pasar por "Aplicar").
-   * Sincroniza el draft para que el sidebar refleje el estado real.
-   */
-  function handleRemoveTag(next: FilterState) {
-    setActiveFilters(next);
-    setDraftFilters(next);
-    setPage(1);
-  }
 
   const isDirty = JSON.stringify(draftFilters) !== JSON.stringify(activeFilters);
 
@@ -261,55 +252,6 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      {/* Etiquetas de filtros activos */}
-      {hasActiveFilters && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">Filtros activos:</span>
-          {search.trim() && (
-            <ActiveTag label={`"${search.trim()}"`} onRemove={() => handleSearch('')} />
-          )}
-          {activeFilters.categories.map((cat) => (
-            <ActiveTag
-              key={cat}
-              label={cat}
-              onRemove={() =>
-                handleRemoveTag({
-                  ...activeFilters,
-                  categories: activeFilters.categories.filter((c) => c !== cat),
-                })
-              }
-            />
-          ))}
-          {activeFilters.modalities.map((mod) => (
-            <ActiveTag
-              key={mod}
-              label={mod}
-              onRemove={() =>
-                handleRemoveTag({
-                  ...activeFilters,
-                  modalities: activeFilters.modalities.filter((m) => m !== mod),
-                })
-              }
-            />
-          ))}
-          {(activeFilters.priceMin || activeFilters.priceMax) && (
-            <ActiveTag
-              label={`S/ ${activeFilters.priceMin || '0'} – ${activeFilters.priceMax || '∞'}`}
-              onRemove={() =>
-                handleRemoveTag({ ...activeFilters, priceMin: '', priceMax: '' })
-              }
-            />
-          )}
-          <button
-            type="button"
-            onClick={handleClearFilters}
-            className="text-xs font-medium text-cee-red underline-offset-2 hover:underline"
-          >
-            Limpiar todo
-          </button>
-        </div>
-      )}
-
       {/* Layout principal: sidebar desktop + grid */}
       <div className="flex gap-8">
         {/* Sidebar (solo desktop) */}
@@ -364,22 +306,6 @@ export default function CatalogPage() {
 }
 
 // ─── Sub-componentes locales ───────────────────────────────────────────────────
-
-function ActiveTag({ label, onRemove }: { label: string; onRemove: () => void }) {
-  return (
-    <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
-      {label}
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={`Eliminar filtro ${label}`}
-        className="ml-0.5 text-muted-foreground hover:text-foreground"
-      >
-        <X className="h-3 w-3" />
-      </button>
-    </span>
-  );
-}
 
 function LoadingGrid() {
   return (
