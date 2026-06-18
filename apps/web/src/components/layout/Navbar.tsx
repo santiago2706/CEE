@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, UserCircle } from 'lucide-react';
 import { MobileMenu } from '@/components/layout/MobileMenu';
+import { Button } from '@/components/ui/button';
 import { navigationLinks } from '@/config/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
@@ -36,22 +37,22 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            to={isAuthenticated ? ROUTES.ADMIN : ROUTES.LOGIN}
-            className="hidden items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium hover:bg-secondary md:flex"
-          >
-            <UserCircle className="h-4 w-4" />
-            {isAuthenticated ? 'Mi cuenta' : 'Iniciar sesion'}
-          </Link>
+          <Button asChild variant="outline" size="sm" className="hidden md:inline-flex">
+            <Link to={isAuthenticated ? ROUTES.ADMIN : ROUTES.LOGIN}>
+              <UserCircle className="h-4 w-4" />
+              {isAuthenticated ? 'Mi cuenta' : 'Iniciar sesion'}
+            </Link>
+          </Button>
 
-          <button
-            type="button"
-            className="rounded-md p-2 text-muted-foreground hover:bg-secondary md:hidden"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
             aria-label="Abrir menu"
             onClick={() => setIsOpen((value) => !value)}
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
       </div>
 
