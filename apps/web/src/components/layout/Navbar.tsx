@@ -56,7 +56,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {isOpen ? <MobileMenu onClose={() => setIsOpen(false)} /> : null}
+      <MobileMenu open={isOpen} onClose={() => setIsOpen(false)} />
     </header>
   );
 }

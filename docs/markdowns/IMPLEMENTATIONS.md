@@ -208,6 +208,61 @@ Construir el pie de página con navegación, contacto, redes y copyright dinámi
 
 ---
 
+### ✅ Isabel — MobileMenu (Tarea 3)
+
+**Estado:** Completada  
+**Fecha:** 2026-06-17  
+**Rama:** `feature/fase2-mobilemenu`
+
+#### Objetivo
+Reemplazar el `<div>` plano del menú móvil por un drawer real usando `Sheet` de shadcn/ui, consumiendo `navigationLinks` del contrato de Elvis (sin duplicar la lista), con cierre al navegar y accesibilidad de teclado/foco.
+
+#### Contexto de la rama
+`feature/fase2-mobilemenu` partía de un commit anterior al contrato de navegación y a la eliminación del carrito. Se hizo `git merge origin/dev` (fast-forward) para traer `navigation.ts`, `useAuth()`, el Footer/Navbar ya actualizados y la eliminación de `cartStore` antes de tocar el MobileMenu.
+
+#### Cambios realizados
+
+##### 1. Crear `apps/web/src/components/ui/sheet.tsx`
+- Componente `Sheet` no existía en el proyecto; se generó siguiendo el patrón estándar de shadcn/ui (basado en `@radix-ui/react-dialog`)
+- Exporta: `Sheet`, `SheetTrigger`, `SheetClose`, `SheetContent`, `SheetHeader`, `SheetFooter`, `SheetTitle`, `SheetDescription`
+- `SheetContent` soporta `side="left" | "right" | "top" | "bottom"` vía `cva`; el menú móvil usa `side="left"`
+- Accesibilidad ya incluida por Radix: cierre con `Esc`, manejo de foco (focus trap), `aria-*` en overlay/contenido/título
+
+##### 2. Instalar dependencia `@radix-ui/react-dialog`
+- No estaba en `apps/web/package.json`; se agregó vía `pnpm add @radix-ui/react-dialog` (requisito de `Sheet`)
+
+##### 3. Reescribir `apps/web/src/components/layout/MobileMenu.tsx`
+- **Antes:** `<div className="md:hidden">` con links renderizados condicionalmente desde Navbar (`isOpen ? <MobileMenu /> : null`)
+- **Después:**
+  - Usa `<Sheet open={open} onOpenChange={...}>` con `SheetContent side="left"`
+  - Itera `navigationLinks` desde `@/config/navigation` (mismo contrato que Navbar/Footer, sin duplicar la lista)
+  - Cada link está envuelto en `SheetClose asChild` — al hacer click, navega **y** cierra el menú automáticamente
+  - Botón de sesión (`Mi cuenta` / `Iniciar sesion`) usa `useAuth()` y el componente `Button` de shadcn, también envuelto en `SheetClose`
+  - Prop `links` (array recibido por props) eliminada — ya no aplica porque el componente consume `navigationLinks` directamente
+
+##### 4. Actualizar `apps/web/src/components/layout/Navbar.tsx`
+- **Antes:** `{isOpen ? <MobileMenu onClose={...} /> : null}` (montaje/desmontaje condicional)
+- **Después:** `<MobileMenu open={isOpen} onClose={...} />` (siempre montado, visibilidad controlada por `Sheet` vía prop `open` — necesario para que las animaciones de entrada/salida de Radix funcionen)
+
+#### Archivos nuevos
+- ✅ `apps/web/src/components/ui/sheet.tsx`
+
+#### Archivos modificados
+- ✅ `apps/web/src/components/layout/MobileMenu.tsx`
+- ✅ `apps/web/src/components/layout/Navbar.tsx`
+- ✅ `apps/web/package.json` (nueva dependencia `@radix-ui/react-dialog`)
+
+#### Verificación
+- ✅ `pnpm --filter web build` no introduce errores nuevos (único error reportado sigue siendo el preexistente de `CourseCard.tsx`, ajeno a esta tarea)
+- ✅ MobileMenu consume `navigationLinks` sin redefinir la lista
+- ✅ Cierre por click en link, por botón X, por click fuera (overlay) y por `Esc` — todo provisto por Radix Dialog
+- ✅ Visible solo bajo el breakpoint `md` (el trigger hamburguesa en Navbar ya tenía `className="md:hidden"`)
+
+#### Nota de regla del repo
+- No se trata de una excepción a "no editar `components/ui/` a mano": `sheet.tsx` no existía y se **creó** siguiendo el patrón shadcn (no se modificó un archivo generado por la CLI de shadcn existente)
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
