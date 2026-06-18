@@ -126,6 +126,40 @@ El flujo de conversión deja de pasar por "carrito → checkout mock" y termina 
 
 ---
 
+### ✅ Diana — Footer (Tarea 4)
+
+**Estado:** Completada  
+**Fecha:** 2026-06-17
+
+#### Objetivo
+Construir el pie de página con navegación, contacto, redes y copyright dinámico, consumiendo `navigationLinks` (contrato de Elvis) sin duplicar la lista de links.
+
+#### Cambios realizados
+- **`apps/web/src/components/layout/Footer.tsx`** reescrito completo con 4 columnas:
+  1. **Marca + tagline:** nombre institucional completo y descripción corta
+  2. **Enlaces rápidos:** iterando `navigationLinks` desde `@/config/navigation` (mismo contrato que Navbar/MobileMenu, no se duplica la lista)
+  3. **Contacto:** correo, teléfono y dirección (placeholder hasta confirmar datos reales del CEE)
+  4. **Síguenos:** iconos de Facebook, Instagram y LinkedIn (`lucide-react`), enlaces placeholder
+- **Copyright dinámico:** `© {new Date().getFullYear()} Centro de Especialización Ejecutiva...` — nunca se hardcodea el año
+- **Enlaces legales placeholder:** "Política de Privacidad" y "Términos de Servicio" (sin ruta real todavía, según lo definido en la tarea)
+- **Estilos:** fondo `bg-cee-red` (paleta institucional guinda definida en `tailwind.config.ts`), texto blanco/blanco translúcido para jerarquía
+- **Responsive:** `grid md:grid-cols-4` — columnas en desktop (`md+`), apiladas en mobile por defecto
+
+#### Archivos modificados
+- ✅ `apps/web/src/components/layout/Footer.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web build` no introduce errores nuevos (único error reportado sigue siendo el preexistente de `CourseCard.tsx`, ajeno a esta tarea)
+- ✅ Footer consume `navigationLinks` sin redefinir la lista de enlaces localmente
+- ✅ Copyright usa `new Date().getFullYear()`, no un año fijo
+
+#### Pendiente / a confirmar con el CEE
+- Datos reales de contacto (teléfono, dirección) — actualmente son placeholder
+- URLs reales de redes sociales
+- Rutas reales para Política de Privacidad y Términos de Servicio (hoy son `#`)
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
