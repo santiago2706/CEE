@@ -72,16 +72,6 @@ export interface User {
   avatarUrl: string;
 }
 
-// ---------- Carrito ----------
-
-export interface CartItem {
-  courseId: string;
-  title: string;
-  price: number;
-  imageUrl: string;
-  quantity: number;
-}
-
 // ---------- Lead / Contacto ----------
 
 export interface ContactLead {

@@ -2,14 +2,12 @@ import { Link } from 'react-router-dom';
 import type { Course } from '@cee/types';
 import { ROUTES } from '@/constants/routes';
 import { formatPrice } from '@/lib/utils';
-import { useCartStore } from '@/store/cartStore';
 
 interface CourseCardProps {
   course: Course;
 }
 
 export function CourseCard({ course }: CourseCardProps) {
-  const addItem = useCartStore((state) => state.addItem);
   const courseUrl = ROUTES.COURSE.replace(':slug', course.slug);
 
   return (
@@ -41,13 +39,12 @@ export function CourseCard({ course }: CourseCardProps) {
             ) : null}
             <p className="text-lg font-bold text-cee-red">{formatPrice(course.price)}</p>
           </div>
-          <button
-            type="button"
+          <Link
+            to={courseUrl}
             className="rounded-md bg-cee-red px-4 py-2 text-sm font-semibold text-white hover:bg-cee-red-dark"
-            onClick={() => addItem(course)}
           >
-            Anadir
-          </button>
+            Ver detalles
+          </Link>
         </div>
       </div>
     </article>

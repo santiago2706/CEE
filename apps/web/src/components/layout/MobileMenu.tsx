@@ -1,22 +1,22 @@
 import { Link } from 'react-router-dom';
+import { navigationLinks } from '@/config/navigation';
 import { ROUTES } from '@/constants/routes';
-import { useAuthStore } from '@/store/authStore';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MobileMenuProps {
-  links: Array<{ href: string; label: string }>;
   onClose: () => void;
 }
 
-export function MobileMenu({ links, onClose }: MobileMenuProps) {
-  const { isAuthenticated } = useAuthStore();
+export function MobileMenu({ onClose }: MobileMenuProps) {
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="border-t bg-background px-4 py-4 md:hidden">
       <nav className="flex flex-col gap-3">
-        {links.map((link) => (
+        {navigationLinks.map((link) => (
           <Link
-            key={link.href}
-            to={link.href}
+            key={link.path}
+            to={link.path}
             className="rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-cee-red"
             onClick={onClose}
           >
