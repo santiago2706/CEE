@@ -62,7 +62,10 @@ export default function CatalogPage() {
 
   // Controles de UI
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
+  /** Lo que el usuario está editando en el sidebar — aún no aplicado */
+  const [draftFilters, setDraftFilters] = useState<FilterState>(EMPTY_FILTERS);
+  /** Filtros confirmados — los que realmente afectan los resultados */
+  const [activeFilters, setActiveFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [page, setPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -107,34 +110,29 @@ export default function CatalogPage() {
     }
 
     // Categoría
-    if (filters.categories.length > 0) {
-      results = results.filter((c) => filters.categories.includes(c.category));
+    if (activeFilters.categories.length > 0) {
+      results = results.filter((c) => activeFilters.categories.includes(c.category));
     }
 
     // Modalidad
-    if (filters.modalities.length > 0) {
-      results = results.filter((c) => filters.modalities.includes(c.modality));
+    if (activeFilters.modalities.length > 0) {
+      results = results.filter((c) => activeFilters.modalities.includes(c.modality));
     }
 
     // Rango de precio
-    const min = filters.priceMin !== '' ? Number(filters.priceMin) : null;
-    const max = filters.priceMax !== '' ? Number(filters.priceMax) : null;
+    const min = activeFilters.priceMin !== '' ? Number(activeFilters.priceMin) : null;
+    const max = activeFilters.priceMax !== '' ? Number(activeFilters.priceMax) : null;
     if (min !== null) results = results.filter((c) => c.price >= min);
     if (max !== null) results = results.filter((c) => c.price <= max);
 
     return applySort(results, sortBy);
-  }, [allCourses, search, filters, sortBy]);
+  }, [allCourses, search, activeFilters, sortBy]);
 
   // ── Paginación ─────────────────────────────────────────────────────────────
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  // Resetear a página 1 cuando cambian los filtros o búsqueda
-  function handleFiltersChange(next: FilterState) {
-    setFilters(next);
-    setPage(1);
-  }
   function handleSearch(value: string) {
     setSearch(value);
     setPage(1);
@@ -143,19 +141,38 @@ export default function CatalogPage() {
     setSortBy(value);
     setPage(1);
   }
+  /** Confirma el borrador y lo convierte en filtros activos */
+  function handleApply() {
+    setActiveFilters(draftFilters);
+    setPage(1);
+    setIsMobileFilterOpen(false);
+  }
+  /** Limpia borrador y filtros activos + resetea todo */
   function handleClearFilters() {
-    setFilters(EMPTY_FILTERS);
+    setDraftFilters(EMPTY_FILTERS);
+    setActiveFilters(EMPTY_FILTERS);
     setSearch('');
     setSortBy('relevance');
     setPage(1);
   }
+  /**
+   * Eliminar un tag aplica inmediatamente (sin pasar por "Aplicar").
+   * Sincroniza el draft para que el sidebar refleje el estado real.
+   */
+  function handleRemoveTag(next: FilterState) {
+    setActiveFilters(next);
+    setDraftFilters(next);
+    setPage(1);
+  }
+
+  const isDirty = JSON.stringify(draftFilters) !== JSON.stringify(activeFilters);
 
   const hasActiveFilters =
     search.trim() !== '' ||
-    filters.categories.length > 0 ||
-    filters.modalities.length > 0 ||
-    filters.priceMin !== '' ||
-    filters.priceMax !== '';
+    activeFilters.categories.length > 0 ||
+    activeFilters.modalities.length > 0 ||
+    activeFilters.priceMin !== '' ||
+    activeFilters.priceMax !== '';
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -221,7 +238,7 @@ export default function CatalogPage() {
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 Filtros
-                {hasActiveFilters && (
+                {(hasActiveFilters || isDirty) && (
                   <span className="flex h-4 w-4 items-center justify-center rounded-full bg-cee-red text-[10px] font-bold text-white">
                     !
                   </span>
@@ -233,10 +250,10 @@ export default function CatalogPage() {
                 <SheetTitle>Filtros</SheetTitle>
               </SheetHeader>
               <FilterSidebar
-                filters={filters}
-                onChange={(next) => {
-                  handleFiltersChange(next);
-                }}
+                draft={draftFilters}
+                isDirty={isDirty}
+                onDraftChange={setDraftFilters}
+                onApply={handleApply}
                 onClear={handleClearFilters}
               />
             </SheetContent>
@@ -251,35 +268,35 @@ export default function CatalogPage() {
           {search.trim() && (
             <ActiveTag label={`"${search.trim()}"`} onRemove={() => handleSearch('')} />
           )}
-          {filters.categories.map((cat) => (
+          {activeFilters.categories.map((cat) => (
             <ActiveTag
               key={cat}
               label={cat}
               onRemove={() =>
-                handleFiltersChange({
-                  ...filters,
-                  categories: filters.categories.filter((c) => c !== cat),
+                handleRemoveTag({
+                  ...activeFilters,
+                  categories: activeFilters.categories.filter((c) => c !== cat),
                 })
               }
             />
           ))}
-          {filters.modalities.map((mod) => (
+          {activeFilters.modalities.map((mod) => (
             <ActiveTag
               key={mod}
               label={mod}
               onRemove={() =>
-                handleFiltersChange({
-                  ...filters,
-                  modalities: filters.modalities.filter((m) => m !== mod),
+                handleRemoveTag({
+                  ...activeFilters,
+                  modalities: activeFilters.modalities.filter((m) => m !== mod),
                 })
               }
             />
           ))}
-          {(filters.priceMin || filters.priceMax) && (
+          {(activeFilters.priceMin || activeFilters.priceMax) && (
             <ActiveTag
-              label={`S/ ${filters.priceMin || '0'} – ${filters.priceMax || '∞'}`}
+              label={`S/ ${activeFilters.priceMin || '0'} – ${activeFilters.priceMax || '∞'}`}
               onRemove={() =>
-                handleFiltersChange({ ...filters, priceMin: '', priceMax: '' })
+                handleRemoveTag({ ...activeFilters, priceMin: '', priceMax: '' })
               }
             />
           )}
@@ -298,8 +315,10 @@ export default function CatalogPage() {
         {/* Sidebar (solo desktop) */}
         <div className="hidden w-56 shrink-0 md:block">
           <FilterSidebar
-            filters={filters}
-            onChange={handleFiltersChange}
+            draft={draftFilters}
+            isDirty={isDirty}
+            onDraftChange={setDraftFilters}
+            onApply={handleApply}
             onClear={handleClearFilters}
           />
         </div>
