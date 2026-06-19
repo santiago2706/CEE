@@ -426,6 +426,69 @@ Construir la página de detalle de curso (`/programas/:slug`): breadcrumb, infor
 
 ---
 
+## Fase 4 — Flujo de Conversión Directo (sin carrito)
+
+### ✅ Renato — Botón "Inscribirme" en Home y Catálogo (Tarea 2)
+
+**Estado:** Completada  
+**Fecha:** 2026-06-19  
+**Rama:** `feature/fase4-cta-coursecard`
+
+#### Objetivo
+Agregar el CTA de inscripción en las tarjetas de curso (`CourseCard`) que se muestran en los listados de Home y Catálogo, navegando al formulario de contacto/registro con el curso preseleccionado vía query param.
+
+#### Contexto
+- El carrito fue eliminado en Fase 2; el flujo de conversión ahora es directo: **curso → Inscribirme → registro/contacto**
+- Santiago (Tarea 1) aún no ha creado formalmente su hook `useCursoSeleccionado()`, pero el mecanismo de paso de datos usado aquí (query param `?curso=<id>`) es el más natural para el router existente y se alinea con lo descrito en `FASE_4_DISTRIBUCION.md`
+- Cuando Santiago entregue el helper, Tom y Diana pueden consumirlo directamente; el botón de `CourseCard` ya envía el parámetro correcto
+
+#### Cambios realizados
+
+##### 1. `apps/web/src/components/shared/CourseCard.tsx` — modificado
+
+**Nuevo botón "Inscribirme":**
+- Se importó `useNavigate` de `react-router-dom`
+- Se creó handler `handleInscribirse()` que navega a `${ROUTES.CONTACT}?curso=${course.id}`
+- El botón usa navegación programática (`useNavigate`) en vez de `<Link>` porque es una acción, no un enlace de navegación estándar
+
+**Reorganización del layout de botones:**
+- **Antes:** un solo botón "Ver detalles" (primario, fondo guinda)
+- **Después:** dos botones lado a lado con `flex gap-2`, cada uno `flex-1`:
+  - **"Ver detalles"** → estilo secundario/outline (`border-2 border-cee-red text-cee-red`, hover rellena fondo guinda y texto blanco)
+  - **"Inscribirme"** → estilo primario (`bg-cee-red text-white`, hover `bg-cee-red-dark`)
+
+**Mejoras de layout de la card:**
+- `<article>` ahora usa `flex flex-col` para que todas las cards del grid tengan altura uniforme
+- Contenido interno usa `flex flex-1 flex-col` con `mt-auto` en la zona de precio, empujando precio y botones al fondo de la card
+- Se agregó `transition-shadow duration-200 hover:shadow-md` para un hover sutil en la card
+- Se agregaron `transition-colors duration-200` en ambos botones para transiciones suaves
+
+#### Archivos modificados
+- ✅ `apps/web/src/components/shared/CourseCard.tsx`
+
+#### Archivos no modificados (sin cambios necesarios)
+- `apps/web/src/pages/home/HomePage.tsx` — ya usa `<CourseCard />` (línea 47), los cambios se reflejan automáticamente
+- `apps/web/src/pages/catalog/CatalogPage.tsx` — ya usa `<CourseCard />` (línea 290), los cambios se reflejan automáticamente
+- `apps/web/src/constants/routes.ts` — ya tiene `CONTACT: '/contacto'`, no se necesitó agregar ruta nueva
+
+#### Mecanismo de paso de datos (contrato con Santiago)
+- **Formato:** `/contacto?curso=<courseId>` (query param)
+- **Ejemplo:** `/contacto?curso=crs-001`
+- **Lectura (lado de Tom/Diana):** `useSearchParams().get('curso')` → resuelve contra el mock de cursos
+- Si Santiago decide cambiar a parámetro de ruta (`/registro/:cursoId`), el cambio en `CourseCard` es de una sola línea (la URL en `handleInscribirse`)
+
+#### Verificación
+- ✅ `pnpm --filter web build` exitoso, cero errores TypeScript
+- ✅ El botón "Inscribirme" aparece en todas las `CourseCard` (Home: 6 cards destacadas, Catálogo: cards paginadas + filtradas/buscadas)
+- ✅ Tipos consumidos desde `@cee/types` (`Course`); no se redefinió nada localmente
+- ✅ No se editó ningún archivo de `components/ui/` (shadcn)
+- ✅ Solo se usó `pnpm`
+
+#### Desviaciones / decisiones
+- No se esperó a que Santiago entregue el hook formal — se implementó el mecanismo directo con query param porque: (a) es trivial y no introduce dependencias nuevas, (b) el hook de Santiago simplemente leerá este mismo parámetro, (c) permite que Tom y Diana avancen en paralelo probando con el parámetro ya funcional
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
