@@ -428,6 +428,51 @@ Construir la página de detalle de curso (`/programas/:slug`): breadcrumb, infor
 
 ## Fase 4 — Flujo de Conversión Directo (sin carrito)
 
+### ✅ Santiago — Lógica de selección de curso a inscribir (Tarea 1)
+
+**Estado:** Completada
+**Fecha:** 2026-06-19
+
+#### Objetivo
+Definir el mecanismo de transporte del curso elegido desde el botón "Inscribirme" (Home, Catálogo, Detalle de curso) hasta el formulario de registro/contacto, sin store global de carrito, y dejarlo documentado como contrato para que Renato (CourseCard), Diana (sidebar de Detalle) y Tom (página de contacto) lo consuman igual.
+
+#### Mecanismo elegido
+- **Query param sobre la ruta ya existente:** `/contacto?curso=<id>` (no se crea ninguna ruta nueva; se reutiliza `ROUTES.CONTACT`)
+- Se usa `course.id`, no `slug` — coincide con `ContactLead.courseInterest` (`@cee/types`), que ya esperaba un `id` de curso (ver `mocks/data/leads.mock.ts`)
+- Si no hay query param (usuario entra directo a `/contacto`), el formulario sigue funcionando como contacto general (resuelto en el hook, no en la página — así Tom no necesita lógica adicional para ese caso)
+
+#### Cambios realizados
+
+##### 1. `apps/web/src/services/courses.service.ts` — agregar `getById(id)`
+- Mismo patrón mock/real que `getBySlug`: en mocks busca en `mockCourses` por `id`; en real llama `GET /courses/:id`
+- Necesario porque el query param transporta el `id`, no el `slug`
+
+##### 2. Crear `apps/web/src/lib/inscripcion.ts`
+- Exporta `COURSE_QUERY_PARAM = 'curso'` y `buildInscripcionUrl(courseId: string)` → `/contacto?curso=<id>`
+- Es el helper que deben usar Renato y Diana al armar el `Link`/`href` del botón "Inscribirme", para que todos generen la misma URL
+
+##### 3. Crear `apps/web/src/hooks/useCursoSeleccionado.ts`
+- Lee el query param `curso` con `useSearchParams` (react-router-dom)
+- Si existe, resuelve el curso con `coursesService.getById`; expone `{ course, isLoading }`
+- Si no existe (o el id no resuelve), `course` queda en `null` sin lanzar error — este es el hook que debe consumir Tom en la página de contacto
+
+#### Archivos nuevos
+- ✅ `apps/web/src/lib/inscripcion.ts`
+- ✅ `apps/web/src/hooks/useCursoSeleccionado.ts`
+
+#### Archivos modificados
+- ✅ `apps/web/src/services/courses.service.ts` (método `getById` agregado)
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ No se tocó `CourseCard.tsx`, el sidebar de `CoursePage.tsx` ni `ContactPage.tsx` — esa integración corresponde a las Tareas 2, 3 y 4 de Fase 4 (Renato, Diana, Tom respectivamente), que deben consumir `buildInscripcionUrl` y `useCursoSeleccionado` tal cual quedaron definidos aquí
+
+#### Contrato para el resto del equipo
+- **Renato / Diana (botón "Inscribirme"):** `<Link to={buildInscripcionUrl(course.id)}>Inscribirme</Link>` — importar desde `@/lib/inscripcion`
+- **Tom (página de contacto):** `const { course, isLoading } = useCursoSeleccionado();` — importar desde `@/hooks/useCursoSeleccionado`; si `course` no es `null`, mostrar "Te estás inscribiendo a: {course.title}"; si es `null`, formulario de contacto general sin cambios
+
+---
+
 ### ✅ Renato — Botón "Inscribirme" en Home y Catálogo (Tarea 2)
 
 **Estado:** Completada  
@@ -439,17 +484,16 @@ Agregar el CTA de inscripción en las tarjetas de curso (`CourseCard`) que se mu
 
 #### Contexto
 - El carrito fue eliminado en Fase 2; el flujo de conversión ahora es directo: **curso → Inscribirme → registro/contacto**
-- Santiago (Tarea 1) aún no ha creado formalmente su hook `useCursoSeleccionado()`, pero el mecanismo de paso de datos usado aquí (query param `?curso=<id>`) es el más natural para el router existente y se alinea con lo descrito en `FASE_4_DISTRIBUCION.md`
-- Cuando Santiago entregue el helper, Tom y Diana pueden consumirlo directamente; el botón de `CourseCard` ya envía el parámetro correcto
+- Santiago (Tarea 1) ya ha creado e implementado el helper `buildInscripcionUrl` y la lógica base en su rama, por lo que Renato integra directamente usando la URL construida por dicho helper.
 
 #### Cambios realizados
 
 ##### 1. `apps/web/src/components/shared/CourseCard.tsx` — modificado
 
 **Nuevo botón "Inscribirme":**
-- Se importó `useNavigate` de `react-router-dom`
-- Se creó handler `handleInscribirse()` que navega a `${ROUTES.CONTACT}?curso=${course.id}`
-- El botón usa navegación programática (`useNavigate`) en vez de `<Link>` porque es una acción, no un enlace de navegación estándar
+- Se importó `buildInscripcionUrl` desde `@/lib/inscripcion`
+- Se cambió el botón para navegar a la URL provista por `buildInscripcionUrl(course.id)`
+- Se usa navegación programática (`useNavigate`) o link directo según convenga. Por consistencia de interactividad se mantiene la acción usando `useNavigate` con la URL construida por el helper: `navigate(buildInscripcionUrl(course.id))`.
 
 **Reorganización del layout de botones:**
 - **Antes:** un solo botón "Ver detalles" (primario, fondo guinda)
@@ -467,15 +511,9 @@ Agregar el CTA de inscripción en las tarjetas de curso (`CourseCard`) que se mu
 - ✅ `apps/web/src/components/shared/CourseCard.tsx`
 
 #### Archivos no modificados (sin cambios necesarios)
-- `apps/web/src/pages/home/HomePage.tsx` — ya usa `<CourseCard />` (línea 47), los cambios se reflejan automáticamente
-- `apps/web/src/pages/catalog/CatalogPage.tsx` — ya usa `<CourseCard />` (línea 290), los cambios se reflejan automáticamente
+- `apps/web/src/pages/home/HomePage.tsx` — ya usa `<CourseCard />`, los cambios se reflejan automáticamente
+- `apps/web/src/pages/catalog/CatalogPage.tsx` — ya usa `<CourseCard />`, los cambios se reflejan automáticamente
 - `apps/web/src/constants/routes.ts` — ya tiene `CONTACT: '/contacto'`, no se necesitó agregar ruta nueva
-
-#### Mecanismo de paso de datos (contrato con Santiago)
-- **Formato:** `/contacto?curso=<courseId>` (query param)
-- **Ejemplo:** `/contacto?curso=crs-001`
-- **Lectura (lado de Tom/Diana):** `useSearchParams().get('curso')` → resuelve contra el mock de cursos
-- Si Santiago decide cambiar a parámetro de ruta (`/registro/:cursoId`), el cambio en `CourseCard` es de una sola línea (la URL en `handleInscribirse`)
 
 #### Verificación
 - ✅ `pnpm --filter web build` exitoso, cero errores TypeScript
@@ -483,9 +521,6 @@ Agregar el CTA de inscripción en las tarjetas de curso (`CourseCard`) que se mu
 - ✅ Tipos consumidos desde `@cee/types` (`Course`); no se redefinió nada localmente
 - ✅ No se editó ningún archivo de `components/ui/` (shadcn)
 - ✅ Solo se usó `pnpm`
-
-#### Desviaciones / decisiones
-- No se esperó a que Santiago entregue el hook formal — se implementó el mecanismo directo con query param porque: (a) es trivial y no introduce dependencias nuevas, (b) el hook de Santiago simplemente leerá este mismo parámetro, (c) permite que Tom y Diana avancen en paralelo probando con el parámetro ya funcional
 
 ---
 

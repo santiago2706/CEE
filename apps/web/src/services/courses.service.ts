@@ -50,6 +50,16 @@ export const coursesService = {
     return response.data;
   },
 
+  async getById(id: string): Promise<ApiResponse<Course>> {
+    if (USE_MOCKS) {
+      const found = mockCourses.find((c) => c.id === id);
+      if (!found) throw new Error(`Curso no encontrado: ${id}`);
+      return delay({ data: found });
+    }
+    const response = await api.get<ApiResponse<Course>>(`${API_ENDPOINTS.COURSES}/${id}`);
+    return response.data;
+  },
+
   async create(data: Omit<Course, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<Course>> {
     if (USE_MOCKS) {
       const now = new Date().toISOString();
