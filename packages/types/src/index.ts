@@ -78,7 +78,8 @@ export interface ContactLead {
   id: string;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
+  subject: string;
   courseInterest: string | null;
   message: string;
   createdAt: string;

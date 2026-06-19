@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Linkedin } from 'lucide-react';
 import { navigationLinks } from '@/config/navigation';
+import { CONTACT_INFO } from '@/constants/contact.constants';
 
 const socialLinks = [
   { label: 'Facebook', href: 'https://facebook.com', icon: Facebook },
@@ -37,9 +38,9 @@ export function Footer() {
             Contacto
           </h3>
           <div className="mt-4 grid gap-2 text-sm text-white/80">
-            <p>contacto@cee-fiis.edu.pe</p>
-            <p>+51 966 644 502</p>
-            <p>Av. Túpac Amaru 210, Rímac, Lima</p>
+            <p>{CONTACT_INFO.email}</p>
+            <p>{CONTACT_INFO.phone}</p>
+            <p>{CONTACT_INFO.address}</p>
           </div>
         </div>
 

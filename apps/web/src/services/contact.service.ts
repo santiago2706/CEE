@@ -7,12 +7,17 @@ const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 const delay = <T>(value: T, ms = 400): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(value), ms));
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function validateLead(data: Omit<ContactLead, 'id' | 'createdAt'>): void {
-  if (!data.name.trim() || !data.email.trim() || !data.phone.trim() || !data.message.trim()) {
-    throw new Error('Todos los campos requeridos deben completarse.');
+  if (data.name.trim().length < 3) {
+    throw new Error('El nombre debe tener al menos 3 caracteres.');
   }
-  if (!data.email.includes('@') || !data.email.includes('.')) {
+  if (!EMAIL_REGEX.test(data.email.trim())) {
     throw new Error('El formato del email no es válido.');
+  }
+  if (!data.subject.trim()) {
+    throw new Error('El asunto es obligatorio.');
   }
   if (data.message.trim().length < 10) {
     throw new Error('El mensaje debe tener al menos 10 caracteres.');

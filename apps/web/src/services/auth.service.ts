@@ -10,20 +10,20 @@ const delay = <T>(value: T, ms = 400): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(value), ms));
 
 export const authService = {
-  async login(email: string, password: string): Promise<ApiResponse<AuthResponse>> {
+  async login(email: string, password: string, remember = true): Promise<ApiResponse<AuthResponse>> {
     if (USE_MOCKS) {
       if (!password.trim()) throw new Error('La contraseña no puede estar vacía.');
       const user = mockUsers.find((u) => u.email === email);
       if (!user) throw new Error('Credenciales inválidas.');
       const token = `mock-token-${user.id}`;
-      useAuthStore.getState().setAuth(user, token);
+      useAuthStore.getState().setAuth(user, token, remember);
       return delay({ data: { user, token } });
     }
     const response = await api.post<ApiResponse<AuthResponse>>(
       `${API_ENDPOINTS.AUTH}/login`,
       { email, password },
     );
-    useAuthStore.getState().setAuth(response.data.data.user, response.data.data.token);
+    useAuthStore.getState().setAuth(response.data.data.user, response.data.data.token, remember);
     return response.data;
   },
 

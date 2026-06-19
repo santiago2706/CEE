@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { UserCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { LogOut, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -11,6 +11,8 @@ import {
 import { navigationLinks } from '@/config/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import { authService } from '@/services/auth.service';
 
 interface MobileMenuProps {
   open: boolean;
@@ -18,7 +20,18 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  const { success } = useToast();
+
+  const profileRoute = user?.role === 'admin' ? ROUTES.ADMIN : ROUTES.HOME;
+
+  const handleLogout = () => {
+    authService.logout();
+    success('Sesión cerrada', 'Vuelve pronto.');
+    onClose();
+    navigate(ROUTES.HOME);
+  };
 
   return (
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
@@ -40,15 +53,22 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           ))}
         </nav>
 
-        <div className="mt-auto">
+        <div className="mt-auto grid gap-2">
           <SheetClose asChild>
             <Button asChild className="w-full justify-center gap-2">
-              <Link to={isAuthenticated ? ROUTES.ADMIN : ROUTES.LOGIN}>
+              <Link to={isAuthenticated ? profileRoute : ROUTES.LOGIN}>
                 <UserCircle className="h-4 w-4" />
-                {isAuthenticated ? 'Mi cuenta' : 'Iniciar sesion'}
+                {isAuthenticated ? 'Mi Perfil' : 'Iniciar sesion'}
               </Link>
             </Button>
           </SheetClose>
+
+          {isAuthenticated && (
+            <Button variant="outline" className="w-full justify-center gap-2" onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+              Cerrar sesión
+            </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>
