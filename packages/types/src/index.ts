@@ -96,6 +96,19 @@ export interface Sale {
   status: 'completed' | 'pending' | 'refunded';
 }
 
+// ---------- Media / Videos ----------
+
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  thumbnailUrl: string;
+  videoUrl: string;
+  duration: number; // en segundos
+  category?: string;
+  createdAt: string;
+}
+
 // ---------- Reporte de ventas (admin) ----------
 
 export interface SalesKpis {
