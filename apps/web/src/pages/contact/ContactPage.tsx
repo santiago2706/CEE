@@ -32,21 +32,46 @@ const INITIAL_VALUES: ContactFormValues = {
 type FormErrors = Partial<Record<keyof Omit<ContactFormValues, 'website'>, string>>;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^9\d{8}$/;
 
 function validate(values: ContactFormValues): FormErrors {
   const errors: FormErrors = {};
 
-  if (values.name.trim().length < 3) {
+  // Nombre: mínimo 3, máximo 100 caracteres
+  if (!values.name.trim()) {
+    errors.name = 'El nombre es obligatorio.';
+  } else if (values.name.trim().length < 3) {
     errors.name = 'El nombre debe tener al menos 3 caracteres.';
+  } else if (values.name.trim().length > 100) {
+    errors.name = 'El nombre no puede exceder 100 caracteres.';
   }
-  if (!EMAIL_REGEX.test(values.email.trim())) {
-    errors.email = 'Ingresa un correo con formato válido.';
+
+  // Email: formato válido
+  if (!values.email.trim()) {
+    errors.email = 'El correo electrónico es obligatorio.';
+  } else if (!EMAIL_REGEX.test(values.email.trim())) {
+    errors.email = 'Ingresa un correo con formato válido (ej. usuario@dominio.com).';
   }
+
+  // Teléfono: opcional, pero si se ingresa debe ser formato peruano (9 dígitos)
+  if (values.phone.trim() && !PHONE_REGEX.test(values.phone.trim())) {
+    errors.phone = 'Ingresa un número peruano de 9 dígitos (ej. 987654321).';
+  }
+
+  // Asunto: obligatorio, máximo 150 caracteres
   if (!values.subject.trim()) {
-    errors.subject = 'Selecciona o escribe un asunto.';
+    errors.subject = 'El asunto es obligatorio.';
+  } else if (values.subject.trim().length > 150) {
+    errors.subject = 'El asunto no puede exceder 150 caracteres.';
   }
-  if (values.message.trim().length < 10) {
+
+  // Mensaje: mínimo 10, máximo 2000 caracteres
+  if (!values.message.trim()) {
+    errors.message = 'El mensaje es obligatorio.';
+  } else if (values.message.trim().length < 10) {
     errors.message = 'El mensaje debe tener al menos 10 caracteres.';
+  } else if (values.message.trim().length > 2000) {
+    errors.message = 'El mensaje no puede exceder 2000 caracteres.';
   }
 
   return errors;
@@ -75,6 +100,24 @@ export default function ContactPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setValues((prev) => ({ ...prev, [field]: e.target.value }));
+
+    // Limpiar el error del campo al editar (feedback en tiempo real)
+    if (errors[field as keyof FormErrors]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field as keyof FormErrors];
+        return next;
+      });
+    }
+  };
+
+  /** Resetea el form preservando el asunto si hay curso preseleccionado */
+  const resetForm = () => {
+    setValues({
+      ...INITIAL_VALUES,
+      subject: course ? `Inscripción: ${course.title}` : '',
+    });
+    setErrors({});
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -82,7 +125,7 @@ export default function ContactPage() {
 
     // Honeypot: si el campo trampa viene relleno, es un bot. Simulamos éxito sin enviar nada.
     if (values.website.trim()) {
-      setValues(INITIAL_VALUES);
+      resetForm();
       success('Mensaje enviado', 'Gracias por contactarnos, te responderemos pronto.');
       return;
     }
@@ -109,8 +152,7 @@ export default function ContactPage() {
         : 'Gracias por contactarnos, te responderemos pronto.';
 
       success('Mensaje enviado', successMsg);
-      setValues(INITIAL_VALUES);
-      setErrors({});
+      resetForm();
     } catch (err) {
       error('No se pudo enviar el mensaje', err instanceof Error ? err.message : 'Intenta nuevamente.');
     } finally {
@@ -178,65 +220,95 @@ export default function ContactPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-1.5">
-                  <Label htmlFor="name">Nombre completo</Label>
+                  <Label htmlFor="name">Nombre completo *</Label>
                   <Input
                     id="name"
                     value={values.name}
                     onChange={handleChange('name')}
+                    maxLength={100}
+                    placeholder="Ej. Juan Pérez"
                     aria-invalid={Boolean(errors.name)}
+                    aria-describedby={errors.name ? 'name-error' : undefined}
                   />
-                  {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                  {errors.name && <p id="name-error" className="text-sm text-destructive">{errors.name}</p>}
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="email">Correo electrónico</Label>
+                  <Label htmlFor="email">Correo electrónico *</Label>
                   <Input
                     id="email"
                     type="email"
                     value={values.email}
                     onChange={handleChange('email')}
+                    placeholder="Ej. usuario@dominio.com"
                     aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
                   />
-                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                  {errors.email && <p id="email-error" className="text-sm text-destructive">{errors.email}</p>}
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-1.5">
                   <Label htmlFor="phone">Teléfono (opcional)</Label>
-                  <Input id="phone" value={values.phone} onChange={handleChange('phone')} />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={values.phone}
+                    onChange={handleChange('phone')}
+                    maxLength={9}
+                    placeholder="Ej. 987654321"
+                    aria-invalid={Boolean(errors.phone)}
+                    aria-describedby={errors.phone ? 'phone-error' : undefined}
+                  />
+                  {errors.phone && <p id="phone-error" className="text-sm text-destructive">{errors.phone}</p>}
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="subject">Asunto</Label>
+                  <Label htmlFor="subject">Asunto *</Label>
                   <Input
                     id="subject"
                     value={values.subject}
                     onChange={handleChange('subject')}
+                    maxLength={150}
                     aria-invalid={Boolean(errors.subject)}
+                    aria-describedby={errors.subject ? 'subject-error' : undefined}
                   />
-                  {errors.subject && <p className="text-sm text-destructive">{errors.subject}</p>}
+                  {errors.subject && <p id="subject-error" className="text-sm text-destructive">{errors.subject}</p>}
                 </div>
               </div>
 
               <div className="grid gap-1.5">
-                <Label htmlFor="message">Mensaje</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="message">Mensaje *</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {values.message.trim().length}/2000
+                  </span>
+                </div>
                 <Textarea
                   id="message"
                   value={values.message}
                   onChange={handleChange('message')}
+                  maxLength={2000}
+                  rows={5}
                   aria-invalid={Boolean(errors.message)}
+                  aria-describedby={errors.message ? 'message-error' : undefined}
                 />
-                {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
+                {errors.message && <p id="message-error" className="text-sm text-destructive">{errors.message}</p>}
               </div>
 
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
-                {isSubmitting
-                  ? 'Enviando...'
-                  : course
-                    ? 'Enviar solicitud de inscripción'
-                    : 'Enviar mensaje'}
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
+                  {isSubmitting
+                    ? 'Enviando...'
+                    : course
+                      ? 'Enviar solicitud de inscripción'
+                      : 'Enviar mensaje'}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Los campos marcados con * son obligatorios.
+                </p>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -276,4 +348,5 @@ export default function ContactPage() {
     </section>
   );
 }
+
 
