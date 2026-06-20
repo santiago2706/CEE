@@ -796,6 +796,69 @@ Construir `CoursesListPage`: tabla de cursos con búsqueda, filtro por estado, y
 
 ---
 
+### ✅ Isabel — Registrar / Editar curso: CRUD formulario (Tarea 4)
+
+**Estado:** Completada
+**Fecha:** 2026-06-20
+**Rama:** `fase5-registrar-editar-curso`
+
+#### Objetivo
+Un único `CourseFormPage` para crear (`/cursos/nuevo`) y editar (`/cursos/:id/editar`) cursos, con validación, subida de sílabo PDF simulada, y guardado contra `coursesService` (mock) con toast + redirect.
+
+#### Decisión: validación manual (sin `react-hook-form`), igual que `apps/web`
+El doc permite explícitamente "usar `react-hook-form` (o el patrón que ya usen en `apps/web`)". `apps/web` no tiene `react-hook-form` instalado en ningún lado — `ContactPage.tsx` y `LoginPage.tsx` validan a mano con `useState` + una función `validate()` que devuelve un objeto de errores. Se siguió ese mismo patrón en `CourseFormPage.tsx` para no introducir una dependencia nueva (`react-hook-form` + posiblemente `zod`/`@hookform/resolvers`) cuando el patrón ya establecido en el monorepo resuelve el mismo requisito con cero dependencias adicionales.
+
+#### Decisión: `CourseFormInput` vive en `coursesService.ts`, no en `@cee/types`
+A diferencia de `DashboardSummary` (Tarea 2), que se agregó a `@cee/types` porque refleja una futura respuesta real del backend, `CourseFormInput` es la forma reducida de campos que pide *este formulario* (`title`, `description`, `price`, `category`, `modality`, `moodleCourseId`, `status`, `syllabusFileName`) — no corresponde 1:1 a ningún endpoint, es un input de UI que el propio `coursesService` expande a un `Course` completo (`buildCourseFromInput`) rellenando con defaults los campos que el formulario no pide (`level`, `imageUrl`, `academicHours`, `rating`, `enrolledCount`, `graduateProfile`, `syllabus`, `instructors`, `benefits`). Ponerlo en `@cee/types` habría sugerido (incorrectamente) que es un contrato de backend.
+
+#### Cambios realizados
+
+##### 1. Primitivos shadcn nuevos en `apps/admin/src/components/ui/`
+- `label.tsx`, `textarea.tsx` — copiados tal cual de `apps/web` (sin dependencias nuevas, son elementos HTML planos)
+
+##### 2. `apps/admin/src/lib/utils.ts` — agregado `slugify()`
+- Mismo comportamiento que el de `apps/web` (normaliza tildes, minúsculas, guiones)
+- *Nota técnica:* se construyó el rango de diacríticos combinables vía `String.fromCharCode(0x0300)`–`String.fromCharCode(0x036f)` en vez del escape literal `̀-ͯ`, porque ese escape se corrompía al pasar por la tubería de herramientas de esta sesión; el comportamiento final es idéntico (verificado con un caso de prueba: `"Gestión de Proyectos Ágiles"` → `"gestion-de-proyectos-agiles"`)
+
+##### 3. Crear `apps/admin/src/constants/courseStatus.ts`
+- `COURSE_STATUS_LABELS` y `COURSE_STATUS_OPTIONS` centralizados — y se refactorizaron `StatusBadge.tsx` y `CoursesListPage.tsx` (de la Tarea 3) para consumir esta constante en vez de repetir "Publicado"/"Borrador"/"En Revisión" en 3 archivos distintos
+
+##### 4. `apps/admin/src/services/coursesService.ts` — extendido
+- Nuevo tipo `CourseFormInput` (exportado) + `buildCourseFromInput()` (helper interno)
+- `getCourseById(id)` — para la precarga en modo edición
+- `createCourse(input)` / `updateCourse(id, input)` — construyen el `Course` completo vía `buildCourseFromInput` y mutan el array en memoria (mismo patrón que `updateCourseStatus`/`deleteCourse` ya existentes)
+
+##### 5. Reescribir `apps/admin/src/pages/CourseFormPage.tsx`
+- Detecta modo con `useParams<{id}>()`; en edición, `useEffect` llama `getCourseById` y precarga el formulario (incluye mostrar el nombre del sílabo ya existente, extraído de `syllabusPdfUrl`)
+- Campos: nombre (`Input`), descripción (`Textarea`), precio (`Input type="number"`), Moodle Course ID (`Input`), categoría/modalidad/estado (`<select>` nativo — mismo criterio que el filtro de estado de la Tarea 3 y `CourseFilter.tsx` de `apps/web`: no se instala `@radix-ui/react-select` para un dropdown simple)
+- Subida de PDF: `<input type="file" accept="application/pdf">`, valida `file.type` y tamaño (≤10MB) mostrando toast de error si falla; muestra el nombre del archivo seleccionado con botón "Quitar"; seleccionar un nuevo archivo reemplaza el anterior de forma natural
+- Validación manual (`validate()` → objeto de errores) igual que `ContactPage.tsx`; mensajes bajo cada campo
+- Botón "Guardar curso" deshabilitado mientras `isSubmitting` o si quedan errores tras el último intento de envío
+- Botón "Cancelar" (`Link` a `/cursos`, sin guardar)
+- Al guardar: `createCourse`/`updateCourse` según el modo → toast de éxito → `navigate('/cursos')`; en error, toast de error sin perder los datos del formulario
+
+#### Archivos nuevos
+- ✅ `apps/admin/src/components/ui/label.tsx`, `textarea.tsx`
+- ✅ `apps/admin/src/constants/courseStatus.ts`
+
+#### Archivos modificados
+- ✅ `apps/admin/src/pages/CourseFormPage.tsx`
+- ✅ `apps/admin/src/services/coursesService.ts`
+- ✅ `apps/admin/src/lib/utils.ts` (`slugify`)
+- ✅ `apps/admin/src/components/courses/StatusBadge.tsx`, `apps/admin/src/pages/CoursesListPage.tsx` (refactor para usar `courseStatus.ts`, sin cambio de comportamiento)
+
+#### Verificación
+- ✅ `pnpm --filter admin lint` y `pnpm --filter web lint` (`tsc --noEmit`): ambos sin errores
+- ✅ `curl` contra `/cursos/nuevo` y `/cursos/c001/editar` del dev server de `apps/admin` responde `200` en ambos
+- ✅ Prueba unitaria manual de `slugify()` confirma el comportamiento esperado tras el cambio de implementación del regex
+- ✅ No se editó ningún archivo existente de `components/ui/`; no se agregó ninguna dependencia nueva (`react-hook-form` evitado a propósito)
+
+#### Pendiente para el resto del equipo
+- Renato (Tarea 5 — Ventas) puede reutilizar `formatPrice`/patrones de `apps/admin/src/lib/utils.ts` y el mismo criterio de `<select>` nativo para su filtro de rango de fechas
+- Elvis (Tarea 6 — QA) debe probar el flujo completo crear → listar → editar → cambiar estado → eliminar en `/cursos`
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
