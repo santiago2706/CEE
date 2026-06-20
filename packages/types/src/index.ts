@@ -140,6 +140,28 @@ export interface SalesReport {
   breakdown: CourseSalesBreakdown[];
 }
 
+// ---------- Resumen del dashboard (admin) ----------
+
+export interface DashboardSummary {
+  publishedCourses: number;
+  publishedCoursesDeltaPct: number;
+  draftCourses: number;
+  draftCoursesDeltaPct: number;
+  monthlySales: number;
+  monthlySalesDeltaPct: number;
+  registeredUsers: number;
+  registeredUsersDeltaPct: number;
+  recentActivity: DashboardActivityItem[];
+}
+
+export interface DashboardActivityItem {
+  id: string;
+  courseTitle: string;
+  action: 'created' | 'updated';
+  author: string;
+  date: string; // ISO datetime, mismo formato que Sale.date
+}
+
 // ---------- Respuesta de autenticación ----------
 
 export interface AuthResponse {
