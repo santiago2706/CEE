@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@cee/types": "workspace:^",
+    "@radix-ui/react-alert-dialog": "^1.1.17",
+    "@radix-ui/react-dropdown-menu": "^2.1.18",
     "@radix-ui/react-slot": "^1.2.5",
     "axios": "^1.7.0",
     "class-variance-authority": "^0.7.0",
