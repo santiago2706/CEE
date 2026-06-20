@@ -30,22 +30,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { COURSE_STATUS_OPTIONS } from '@/constants/courseStatus';
 import { useCourses } from '@/hooks/useCourses';
 import { useToast } from '@/hooks/useToast';
 import { formatPrice } from '@/lib/utils';
 
 const STATUS_FILTER_OPTIONS: { value: CourseStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'Todos' },
-  { value: 'published', label: 'Publicado' },
-  { value: 'draft', label: 'Borrador' },
-  { value: 'review', label: 'En Revisión' },
+  ...COURSE_STATUS_OPTIONS,
 ];
 
-const STATUS_ACTION_OPTIONS: { value: CourseStatus; label: string }[] = [
-  { value: 'published', label: 'Publicado' },
-  { value: 'draft', label: 'Borrador' },
-  { value: 'review', label: 'En Revisión' },
-];
+const STATUS_ACTION_OPTIONS = COURSE_STATUS_OPTIONS;
 
 const dateFormatter = new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
 
