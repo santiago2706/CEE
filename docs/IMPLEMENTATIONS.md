@@ -555,6 +555,105 @@ Agregar el CTA principal de inscripción en el sidebar de la página de Detalle 
 
 ---
 
+## Fase 5 — Panel Administrativo (apps/admin)
+
+### ✅ Elvis — Infraestructura del panel (Tarea 1)
+
+**Estado:** Completada
+**Fecha:** 2026-06-20
+**Rama:** `fase5-infra-admin-protected-route`
+
+#### Objetivo
+Dejar `apps/admin` como app independiente y funcional (login mock, layout, router protegido por rol) para que Diana, Tom, Isabel y Renato puedan integrar sus páginas encima, y resolver la duplicidad de pantallas admin que había quedado en `apps/web` (Decisión B pendiente en `CONTEXT.md`).
+
+#### Decisión tomada y por qué: redirigir a `ROUTES.HOME` en vez de a una URL externa del admin
+`apps/web` tenía 3 puntos (`Navbar.tsx`, `MobileMenu.tsx`, `LoginPage.tsx`) que, al detectar `user.role === 'admin'`, navegaban a `ROUTES.ADMIN` (`/admin`) **dentro del propio router de `apps/web`**. Al mover el panel a `apps/admin` (app separada, puerto/dev-server distinto, y en producción probablemente dominio/subdominio distinto), esa ruta deja de existir en `apps/web` — seguir navegando ahí habría caído en el `NotFoundPage`.
+
+Se evaluaron 2 opciones:
+1. **Redirigir siempre a `ROUTES.HOME`** (elegida).
+2. Agregar una variable de entorno (`VITE_ADMIN_URL`) y hacer `window.location.href` al admin externo desde esos 3 puntos.
+
+**Por qué se eligió la opción 1:** el panel admin todavía no comparte sesión con el sitio público — `apps/admin` resuelve su propia sesión con un mock interno (`mockLogin()`), no recibe nada del login de `apps/web`. Es decir, hoy un admin **no inicia sesión desde el sitio público** para llegar al panel; entra directo a `apps/admin`. Mantener la rama `role === 'admin' → /admin` en `apps/web` protegía un flujo que ya no aplica con la separación de apps. Cablear ahora un cruce real entre apps (`VITE_ADMIN_URL` + `window.location`) habría sido prematuro: ese cruce solo tiene sentido cuando exista un login/JWT compartido real entre `apps/web` y `apps/admin`, lo cual es explícitamente Fase 6 (fuera de alcance de Fase 5, que trabaja 100% sobre mocks). Se prefirió no introducir infraestructura (env var nueva, navegación cross-app) para un caso que se va a rediseñar de todas formas en la fase siguiente.
+
+**Cómo aplicar este criterio a futuro:** cualquier navegación cross-app (`apps/web` ↔ `apps/admin`) debe esperar a que exista un mecanismo de sesión compartido (Fase 6); hasta entonces, simplificar a navegación dentro del propio app.
+
+#### Cambios realizados
+
+##### 1. Limpieza de duplicidad en `apps/web` (Decisión B de `CONTEXT.md`, cerrada)
+- **Eliminados:** `apps/web/src/pages/admin/` completo (`DashboardPage.tsx`, `CoursesAdminPage.tsx`, `SalesPage.tsx` — los 3 eran placeholders "En construcción", sin lógica) y `apps/web/src/router/ProtectedRoute.tsx`
+- **`apps/web/src/constants/routes.ts`:** removidas las claves `ADMIN`, `ADMIN_COURSES`, `ADMIN_USERS`, `ADMIN_SALES`, `ADMIN_SETTINGS` (ya no corresponden a ninguna ruta de esta app)
+- **`apps/web/src/router/index.tsx`:** removido el bloque de rutas admin, el import de `ProtectedRoute` y los `lazy()` de las 3 páginas eliminadas
+- **`apps/web/src/components/layout/Navbar.tsx`, `MobileMenu.tsx`:** removida la variable `profileRoute` (rama `role === 'admin' ? ROUTES.ADMIN : ROUTES.HOME`); el botón "Mi Perfil" ahora navega siempre a `ROUTES.HOME` cuando hay sesión
+- **`apps/web/src/pages/auth/LoginPage.tsx`:** el redirect post-login ya no distingue por rol; siempre `navigate(ROUTES.HOME, { replace: true })`
+
+##### 2. `apps/admin` — dependencias agregadas
+- `react-router-dom` (no existía; el admin no tenía routing)
+- `@cee/types` (workspace) — para el tipo `User` en el authStore mock
+- `@radix-ui/react-slot` — requisito de `Button asChild` (shadcn)
+
+##### 3. Setup de shadcn/Tailwind en `apps/admin`
+- `apps/admin/tailwind.config.ts`: agregados los tokens de color (`border`, `input`, `ring`, `background`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `card`, `popover`) y `borderRadius` — mismo esquema que `apps/web`, manteniendo la paleta `cee.red`/`cee.cream` ya existente
+- `apps/admin/src/index.css`: agregadas las variables CSS `:root` (HSL) que esos tokens consumen, y `@apply border-border` / `bg-background text-foreground`
+- `apps/admin/src/lib/utils.ts` (nuevo): `cn()` — idéntico al de `apps/web`
+- `apps/admin/src/components/ui/button.tsx` (nuevo): componente `Button` de shadcn, copiado tal cual del patrón de `apps/web` (no se edita a mano después de creado)
+
+##### 4. Auth mock (`apps/admin/src/store/authStore.ts`, `apps/admin/src/mocks/auth.ts`)
+- `authStore`: Zustand, **sin `localStorage`** — decisión obligada por la regla del repo ("`localStorage` solo en `apps/web/src/store/authStore.ts`"). La sesión del admin vive solo en memoria y se reinicia al refrescar la página; está documentado en un comentario en el propio archivo
+- `mocks/auth.ts`: `mockAdminUser` (rol `"admin"`) + `mockLogin()`, invocado una vez en `main.tsx` al levantar la app — simula sesión iniciada durante desarrollo, sin pantalla de login real (no estaba en el alcance de esta tarea)
+
+##### 5. `apps/admin/src/components/ProtectedRoute.tsx`
+- Mismo patrón que el de `apps/web` (ya eliminado de ahí), pero **redirige a `/acceso-denegado`** en vez de a `/login` — no existe todavía una pantalla de login en `apps/admin` (fuera de alcance de esta tarea); el propio doc de Fase 5 ofrece esta alternativa ("o pantalla de Acceso denegado")
+- `apps/admin/src/pages/AccessDeniedPage.tsx` (nuevo): placeholder de esa pantalla
+
+##### 6. `apps/admin/src/layouts/AdminLayout.tsx`
+- Sidebar fijo en desktop (`hidden md:flex`) con 3 links (Dashboard/Cursos/Ventas, iconos de `lucide-react`, estado activo vía `NavLink`)
+- Sidebar mobile: drawer simple con overlay + `useState`, **sin** `@radix-ui/react-dialog` (se evitó añadir esa dependencia solo para un toggle de sidebar en esta tarea de infraestructura; el refinamiento visual queda para quien lo necesite)
+- Header: nombre del usuario admin (`authStore`) + botón cerrar sesión
+- `<Outlet/>` para las páginas
+
+##### 7. `apps/admin/src/router.tsx` + páginas placeholder
+- Rutas con `lazy()` + `<Suspense>` (mismo patrón que `apps/web`): `/`, `/cursos`, `/cursos/nuevo`, `/cursos/:id/editar`, `/ventas`, todas bajo `ProtectedRoute requiredRole="admin"` + `AdminLayout`; `/acceso-denegado` fuera de esa protección
+- Páginas nuevas (placeholders "En construcción", contenido real es de Diana/Tom/Isabel/Renato): `DashboardPage.tsx`, `CoursesListPage.tsx`, `CourseFormPage.tsx` (compartida crear/editar), `SalesPage.tsx`
+
+##### 8. `apps/admin/src/main.tsx`
+- Reemplazado el placeholder estático por `<RouterProvider router={router} />`
+- Llama `mockLogin()` antes de montar React (simula sesión admin para poder navegar sin pantalla de login)
+
+#### Archivos nuevos
+- ✅ `apps/admin/src/lib/utils.ts`
+- ✅ `apps/admin/src/components/ui/button.tsx`
+- ✅ `apps/admin/src/store/authStore.ts`
+- ✅ `apps/admin/src/mocks/auth.ts`
+- ✅ `apps/admin/src/components/ProtectedRoute.tsx`
+- ✅ `apps/admin/src/components/PageLoader.tsx`
+- ✅ `apps/admin/src/layouts/AdminLayout.tsx`
+- ✅ `apps/admin/src/pages/DashboardPage.tsx`
+- ✅ `apps/admin/src/pages/CoursesListPage.tsx`
+- ✅ `apps/admin/src/pages/CourseFormPage.tsx`
+- ✅ `apps/admin/src/pages/SalesPage.tsx`
+- ✅ `apps/admin/src/pages/AccessDeniedPage.tsx`
+- ✅ `apps/admin/src/router.tsx`
+
+#### Archivos modificados
+- ✅ `apps/admin/tailwind.config.ts`, `apps/admin/src/index.css`, `apps/admin/src/main.tsx`, `apps/admin/package.json` (deps)
+- ✅ `apps/web/src/constants/routes.ts`, `apps/web/src/router/index.tsx`, `apps/web/src/components/layout/Navbar.tsx`, `apps/web/src/components/layout/MobileMenu.tsx`, `apps/web/src/pages/auth/LoginPage.tsx`
+
+#### Archivos eliminados
+- ❌ `apps/web/src/pages/admin/DashboardPage.tsx`, `CoursesAdminPage.tsx`, `SalesPage.tsx`
+- ❌ `apps/web/src/router/ProtectedRoute.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter admin lint` y `pnpm --filter web lint` (`tsc --noEmit`): ambos sin errores
+- ✅ `pnpm --filter admin dev` levanta en el puerto 5174 (distinto al 5173 de `apps/web`, ya configurado desde el scaffold inicial)
+- ✅ `curl` contra `/`, `/cursos` y `/ventas` del dev server de `apps/admin` responde `200` (SPA sirve el shell correctamente; `mockLogin()` + `ProtectedRoute` permiten el acceso)
+- ✅ `grep` confirma cero referencias residuales a `ROUTES.ADMIN*` en `apps/web/src`
+
+#### Pendiente para el resto del equipo
+- Diana, Tom, Isabel y Renato deben construir el contenido real de `DashboardPage`, `CoursesListPage`, `CourseFormPage` y `SalesPage` (hoy son placeholders) y sus propios mocks/servicios (`apps/admin/src/mocks/*`, `apps/admin/src/services/*`)
+- Pantalla de login real para `apps/admin` no está en el alcance de esta tarea ni del doc de Fase 5; mientras no exista, `mockLogin()` en `main.tsx` es la única forma de "entrar" al panel en desarrollo
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
