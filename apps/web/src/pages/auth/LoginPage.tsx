@@ -49,7 +49,7 @@ export default function LoginPage() {
     try {
       const response = await authService.login(email.trim(), password, remember);
       success('Bienvenido de nuevo', `Sesión iniciada como ${response.data.user.name}.`);
-      navigate(response.data.user.role === 'admin' ? ROUTES.ADMIN : ROUTES.HOME, { replace: true });
+      navigate(ROUTES.HOME, { replace: true });
     } catch (err) {
       error('No se pudo iniciar sesión', err instanceof Error ? err.message : 'Intenta nuevamente.');
     } finally {

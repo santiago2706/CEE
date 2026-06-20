@@ -7,9 +7,4 @@ export const ROUTES = {
   CONTACT: '/contacto',
   LOGIN: '/login',
   REGISTER: '/registro',
-  ADMIN: '/admin',
-  ADMIN_COURSES: '/admin/cursos',
-  ADMIN_USERS: '/admin/usuarios',
-  ADMIN_SALES: '/admin/ventas',
-  ADMIN_SETTINGS: '/admin/configuracion',
 } as const;

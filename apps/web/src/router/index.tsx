@@ -3,7 +3,6 @@ import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { PageLoader } from '@/components/shared/PageLoader';
 import { ROUTES } from '@/constants/routes';
-import { ProtectedRoute } from '@/router/ProtectedRoute';
 
 const HomePage = lazy(() => import('@/pages/home/HomePage'));
 const CatalogPage = lazy(() => import('@/pages/catalog/CatalogPage'));
@@ -13,9 +12,6 @@ const MultimediaPage = lazy(() => import('@/pages/multimedia/MultimediaPage'));
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
-const DashboardPage = lazy(() => import('@/pages/admin/DashboardPage'));
-const CoursesAdminPage = lazy(() => import('@/pages/admin/CoursesAdminPage'));
-const SalesPage = lazy(() => import('@/pages/admin/SalesPage'));
 const NotFoundPage = lazy(() => import('@/pages/not-found/NotFoundPage'));
 
 function withSuspense(element: JSX.Element) {
@@ -34,14 +30,6 @@ export const router = createBrowserRouter([
       { path: ROUTES.CONTACT, element: withSuspense(<ContactPage />) },
       { path: ROUTES.LOGIN, element: withSuspense(<LoginPage />) },
       { path: ROUTES.REGISTER, element: withSuspense(<RegisterPage />) },
-      {
-        element: <ProtectedRoute requiredRole="admin" />,
-        children: [
-          { path: ROUTES.ADMIN, element: withSuspense(<DashboardPage />) },
-          { path: ROUTES.ADMIN_COURSES, element: withSuspense(<CoursesAdminPage />) },
-          { path: ROUTES.ADMIN_SALES, element: withSuspense(<SalesPage />) },
-        ],
-      },
       { path: '*', element: withSuspense(<NotFoundPage />) },
     ],
   },

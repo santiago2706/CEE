@@ -12,11 +12,9 @@ import { cn } from '@/lib/utils';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { success } = useToast();
-
-  const profileRoute = user?.role === 'admin' ? ROUTES.ADMIN : ROUTES.HOME;
 
   const handleLogout = () => {
     authService.logout();
@@ -50,7 +48,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           <Button asChild variant="outline" size="sm" className="hidden md:inline-flex">
-            <Link to={isAuthenticated ? profileRoute : ROUTES.LOGIN}>
+            <Link to={isAuthenticated ? ROUTES.HOME : ROUTES.LOGIN}>
               <UserCircle className="h-4 w-4" />
               {isAuthenticated ? 'Mi Perfil' : 'Iniciar sesion'}
             </Link>

@@ -20,11 +20,9 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { success } = useToast();
-
-  const profileRoute = user?.role === 'admin' ? ROUTES.ADMIN : ROUTES.HOME;
 
   const handleLogout = () => {
     authService.logout();
@@ -56,7 +54,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         <div className="mt-auto grid gap-2">
           <SheetClose asChild>
             <Button asChild className="w-full justify-center gap-2">
-              <Link to={isAuthenticated ? profileRoute : ROUTES.LOGIN}>
+              <Link to={isAuthenticated ? ROUTES.HOME : ROUTES.LOGIN}>
                 <UserCircle className="h-4 w-4" />
                 {isAuthenticated ? 'Mi Perfil' : 'Iniciar sesion'}
               </Link>
