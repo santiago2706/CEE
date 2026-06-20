@@ -717,6 +717,85 @@ El doc de la tarea pide un fixture con "los números de los KPIs y la actividad 
 
 ---
 
+### ✅ Tom — Gestión de Cursos: CRUD listado (Tarea 3)
+
+**Estado:** Completada
+**Fecha:** 2026-06-20
+**Rama:** `fase5-gestion-cursos`
+
+#### Objetivo
+Construir `CoursesListPage`: tabla de cursos con búsqueda, filtro por estado, y acciones (Editar, Cambiar estado, Eliminar) contra un `coursesService` mock que muta en memoria, con feedback visual inmediato (toast).
+
+#### Decisión: portar primitivos shadcn (`Table`, `AlertDialog`, `DropdownMenu`, `Input`, `Badge`) y el sistema de toast a `apps/admin` en vez de importarlos de `apps/web`
+`apps/admin` y `apps/web` son apps Vite independientes (sin `packages/ui` compartido todavía — sigue vacío). No hay forma de importar un componente de una app desde la otra sin convertirlo primero en paquete compartido, y hacerlo ahora habría sido un cambio de arquitectura fuera del alcance de esta tarea. Se copiaron los primitivos que ya existían en `apps/web` (mismo patrón ya usado en Tareas 1 y 2: `card.tsx`, `button.tsx`) y se creó desde cero lo que no existía en ninguna de las dos apps (`Table`, `AlertDialog`, `DropdownMenu` — `apps/web` tampoco los tenía).
+
+**Cómo aplicar este criterio a futuro:** si un tercer componente UI se necesita en ambas apps, considerar moverlo a `packages/ui` en vez de triplicar la copia; por ahora, con solo 2 apps y pocos componentes duplicados, no se justifica la inversión.
+
+#### Cambios realizados
+
+##### 1. Dependencias nuevas en `apps/admin`
+- `@radix-ui/react-alert-dialog`, `@radix-ui/react-dropdown-menu`
+
+##### 2. Primitivos shadcn nuevos en `apps/admin/src/components/ui/`
+- `input.tsx`, `badge.tsx` — copiados tal cual de `apps/web`
+- `table.tsx` — semántico, sin dependencia de Radix (no existía en ninguna app)
+- `alert-dialog.tsx`, `dropdown-menu.tsx` — generados siguiendo el patrón estándar de shadcn sobre los paquetes Radix recién instalados (no existían en ninguna app)
+
+##### 3. Sistema de toast portado a `apps/admin`
+- `store/toastStore.ts`, `hooks/useToast.ts`, `components/ui/toast.tsx` (`Toaster`) — copia exacta del patrón Zustand de `apps/web` (sin Radix)
+- `Toaster` montado en `layouts/AdminLayout.tsx` (antes no existía ningún sistema de notificaciones en admin)
+
+##### 4. `apps/admin/src/lib/utils.ts` — agregado `formatPrice()`
+- Mismo formato que `apps/web` (`S/ 199.00`), necesario para la columna Precio
+
+##### 5. Crear `apps/admin/src/mocks/courses.ts`
+- Fixture propio de `apps/admin` (8 cursos, mezcla de los 3 estados) — **no** se reutiliza `apps/web/src/mocks/data/courses.mock.ts` porque son apps separadas sin mocks compartidos
+- Objetos `Course` completos (`@cee/types`) con arrays vacíos en los campos no relevantes para una vista de listado (`syllabus`, `instructors`, `graduateProfile`, `benefits`)
+
+##### 6. Crear `apps/admin/src/services/coursesService.ts`
+- `getCourses()`, `updateCourseStatus(id, status)`, `deleteCourse(id)` — mutan un array `Course[]` a nivel de módulo (en memoria); sin rama mock/real (`VITE_USE_MOCKS`), igual que `dashboardService` (Fase 5 trabaja 100% sobre mocks)
+
+##### 7. Crear `apps/admin/src/hooks/useCourses.ts`
+- Envuelve el service: `{ courses, isLoading, changeStatus, remove }`; actualiza el estado local tras cada mutación para reflejo inmediato en la tabla
+
+##### 8. Crear `apps/admin/src/components/courses/StatusBadge.tsx`
+- Envuelve el `Badge` de `components/ui/` con colores por estado: Publicado (verde `emerald`), Borrador (gris `neutral`), En Revisión (ámbar `amber`)
+- Diseñado para ser reutilizado también por Isabel en el formulario (Tarea 4), según pide el doc
+
+##### 9. Reescribir `apps/admin/src/pages/CoursesListPage.tsx`
+- Tabla (`Table` de shadcn) con columnas Nombre/Categoría/Modalidad/Precio/Estado/Fecha creación/Acciones
+- Búsqueda por nombre (`Input`, filtro en cliente sobre `courses`) + filtro por estado (`<select>` nativo, mismo criterio que `CourseFilter.tsx` de `apps/web`: no se instaló `@radix-ui/react-select` para un dropdown simple)
+- Botón "Nuevo curso" → `/cursos/nuevo`
+- Por fila: "Editar" → `/cursos/:id/editar`; "Cambiar estado" vía `DropdownMenu` (3 opciones, la actual deshabilitada); "Eliminar" vía `AlertDialog` de confirmación
+- Toast de éxito (`useToast`) tras cambiar estado o eliminar
+- Estado de carga ("Cargando cursos...") y estado vacío ("No se encontraron cursos con esos filtros")
+
+#### Archivos nuevos
+- ✅ `apps/admin/src/components/ui/input.tsx`, `badge.tsx`, `table.tsx`, `alert-dialog.tsx`, `dropdown-menu.tsx`, `toast.tsx`
+- ✅ `apps/admin/src/store/toastStore.ts`, `apps/admin/src/hooks/useToast.ts`
+- ✅ `apps/admin/src/mocks/courses.ts`
+- ✅ `apps/admin/src/services/coursesService.ts`
+- ✅ `apps/admin/src/hooks/useCourses.ts`
+- ✅ `apps/admin/src/components/courses/StatusBadge.tsx`
+
+#### Archivos modificados
+- ✅ `apps/admin/src/pages/CoursesListPage.tsx`
+- ✅ `apps/admin/src/layouts/AdminLayout.tsx` (monta `<Toaster/>`)
+- ✅ `apps/admin/src/lib/utils.ts` (`formatPrice`)
+- ✅ `apps/admin/package.json` (deps `@radix-ui/react-alert-dialog`, `@radix-ui/react-dropdown-menu`)
+
+#### Verificación
+- ✅ `pnpm --filter admin lint` y `pnpm --filter web lint` (`tsc --noEmit`): ambos sin errores
+- ✅ `curl` contra `/cursos` del dev server de `apps/admin` responde `200`
+- ✅ Cambiar estado y eliminar actualizan la tabla en memoria de inmediato + muestran toast de confirmación
+- ✅ No se editó ningún archivo existente de `components/ui/`
+
+#### Pendiente para el resto del equipo
+- Isabel (Tarea 4) debe reutilizar `StatusBadge` en el formulario de crear/editar curso
+- `CourseFormPage.tsx` sigue siendo placeholder; las rutas `/cursos/nuevo` y `/cursos/:id/editar` ya navegan correctamente desde esta tabla
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
