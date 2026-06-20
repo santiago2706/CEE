@@ -859,6 +859,72 @@ A diferencia de `DashboardSummary` (Tarea 2), que se agregó a `@cee/types` porq
 
 ---
 
+### ✅ Renato — Ventas (Tarea 5)
+
+**Estado:** Completada
+**Fecha:** 2026-06-20
+**Rama:** `fase5-ventas`
+
+#### Objetivo
+`SalesPage` con 3 KPIs, gráfico de tendencia (`recharts`), desglose por curso y filtro de rango de fechas, todo contra un `salesService` mock.
+
+#### Decisión: reutilizar `SummaryCard` de Diana tal cual, sin modificarlo
+El doc sugería "reutilizar `SummaryCard` de Diana si ya está listo, o coordinar". Ya estaba listo (Tarea 2) y su props (`icon, label, value, trend`) son genéricas — no fue necesario tocarlo ni crear una variante para Ventas. El único matiz es que el texto fijo "vs. mes anterior" dentro del propio `SummaryCard` no siempre es literalmente exacto cuando el rango seleccionado es "semana" o "trimestre", pero se decidió no parametrizarlo para no modificar un componente ya entregado por otra tarea por una diferencia cosmética menor; queda anotado como mejora futura si se vuelve relevante.
+
+#### Decisión: `SalesDateRange` vive en `salesService.ts`, no en `@cee/types`
+Mismo criterio que `CourseFormInput` (Tarea 4): es un parámetro de filtro de UI (qué ventana de tiempo mostrar), no un contrato de respuesta de backend. `SalesReport`/`SalesKpis`/`SalesTrendPoint`/`CourseSalesBreakdown` sí ya estaban en `@cee/types` (probablemente preparados de antemano para esta tarea) y se usaron sin cambios.
+
+#### Decisión: 3 fixtures completos (semana/mes/trimestre) en vez de un único dataset recalculado
+Para el filtro de rango de fechas (opcional según el doc: "si da el tiempo"), se optó por declarar 3 `SalesReport` mock independientes con distinta granularidad de tendencia (7 puntos diarios para semana, 4 semanales para mes, 6 mensuales para trimestre) en vez de derivar agregaciones en tiempo real desde un único dataset. Es más simple de mantener como mock y evita lógica de agregación que de todos modos se reemplazará al conectar el backend real en Fase 6.
+
+#### Cambios realizados
+
+##### 1. Dependencia nueva en `apps/admin`
+- `recharts` (no estaba instalado en ninguna app; `apps/web` no lo usa)
+
+##### 2. Crear `apps/admin/src/mocks/sales.ts`
+- `mockSalesReports: { week, month, quarter }`, cada uno un `SalesReport` completo (kpis + trend + breakdown) con cursos ya existentes en `mocks/courses.ts` (mismos `courseId`)
+
+##### 3. Crear `apps/admin/src/services/salesService.ts`
+- `getSalesReport(range: SalesDateRange = 'month')` — devuelve el fixture correspondiente con `delay` simulado, mismo patrón que `dashboardService`/`coursesService`
+
+##### 4. Crear `apps/admin/src/hooks/useSales.ts`
+- Maneja el estado del `range` (`useState`) y vuelve a pedir el reporte cuando cambia (`useEffect` con `range` en las dependencias); expone `{ report, isLoading, range, setRange }`
+
+##### 5. Crear `apps/admin/src/components/sales/SalesTrendChart.tsx`
+- `LineChart` de `recharts` con `ResponsiveContainer` (responsive real, no solo CSS), `Tooltip` formateado con `formatPrice`, color `#8B1A1A` (cee-red)
+
+##### 6. Crear `apps/admin/src/components/sales/CourseBreakdownTable.tsx`
+- Tabla (reutiliza el `Table` de la Tarea 3) ordenada por ingresos descendente — se eligió tabla en vez de gráfico de barras horizontal (el doc daba a elegir) porque el primitivo ya existía y es más legible con `lastTransaction` incluida
+
+##### 7. Reescribir `apps/admin/src/pages/SalesPage.tsx`
+- Selector de rango (`<select>` nativo, mismo criterio que los demás selects simples del admin) con las 3 opciones del doc
+- 3 `SummaryCard`: Total Ventas, Ingresos (`formatPrice`), Tasa de Conversión (`%`)
+- `SalesTrendChart` + `CourseBreakdownTable` dentro de `Card`
+- Estado de carga mientras `isLoading`
+
+#### Archivos nuevos
+- ✅ `apps/admin/src/mocks/sales.ts`
+- ✅ `apps/admin/src/services/salesService.ts`
+- ✅ `apps/admin/src/hooks/useSales.ts`
+- ✅ `apps/admin/src/components/sales/SalesTrendChart.tsx`
+- ✅ `apps/admin/src/components/sales/CourseBreakdownTable.tsx`
+
+#### Archivos modificados
+- ✅ `apps/admin/src/pages/SalesPage.tsx`
+- ✅ `apps/admin/package.json` (dependencia `recharts`)
+
+#### Verificación
+- ✅ `pnpm --filter admin lint` y `pnpm --filter web lint` (`tsc --noEmit`): ambos sin errores
+- ✅ `curl` contra `/ventas` del dev server de `apps/admin` responde `200`
+- ✅ Cambiar el selector de rango dispara una nueva carga (`useEffect` con `range`) y recalcula KPIs, gráfico y desglose
+- ✅ No se editó ningún archivo existente de `components/ui/`; `SummaryCard` se reutilizó sin modificar
+
+#### Pendiente para el resto del equipo
+- Elvis (Tarea 6 — QA) debe probar el flujo completo del panel: Dashboard → Cursos (crear/editar/cambiar estado/eliminar) → Ventas (cambiar rango), responsive y sin errores de consola — cierre de la Fase 5
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
