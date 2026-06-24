@@ -6,7 +6,6 @@ import { CourseCard } from '@/components/shared/CourseCard';
 import { CourseFilter } from '@/components/shared/CourseFilter';
 import { EventSlider } from '@/components/home/EventSlider';
 import { Button } from '@/components/ui/button';
-import { InstitutionalLogos } from '@/components/shared/InstitutionalLogos';
 import { ROUTES } from '@/constants/routes';
 import { useCourses } from '@/hooks/useCourses';
 import { useEvents } from '@/hooks/useEvents';
@@ -68,20 +67,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl">Próximos eventos</h2>
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mb-6 flex flex-col gap-1 sm:mb-8">
+          <p className="text-xs font-medium uppercase tracking-widest text-cee-red">
+            Agenda CEE
+          </p>
+          <h2 className="text-2xl sm:text-3xl">Próximos eventos</h2>
         </div>
         <EventSlider events={events} />
-      </section>
-
-      <section className="border-b border-border bg-muted/50">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Con el respaldo de
-          </p>
-          <InstitutionalLogos variant="color" />
-        </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
