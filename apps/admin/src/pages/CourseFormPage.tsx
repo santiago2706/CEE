@@ -82,6 +82,7 @@ export default function CourseFormPage() {
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [errors, setErrors] = useState<FormErrors>({});
   const [syllabusFileName, setSyllabusFileName] = useState<string | null>(null);
+  const [syllabusFile, setSyllabusFile] = useState<File | null>(null);
   const [isLoadingCourse, setIsLoadingCourse] = useState(isEditMode);
   const [loadError, setLoadError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -142,10 +143,12 @@ export default function CourseFormPage() {
     }
 
     setSyllabusFileName(file.name);
+    setSyllabusFile(file);
   };
 
   const handleRemoveFile = () => {
     setSyllabusFileName(null);
+    setSyllabusFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -171,6 +174,7 @@ export default function CourseFormPage() {
         moodleCourseId: Number(values.moodleCourseId.trim()),
         status: values.status,
         syllabusFileName,
+        syllabusFile,
       };
 
       if (isEditMode && id) {
@@ -332,10 +336,7 @@ export default function CourseFormPage() {
         </div>
 
         <div className="flex gap-3">
-          <Button
-            type="submit"
-            disabled={isSubmitting || Object.keys(errors).length > 0}
-          >
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Guardando...' : 'Guardar curso'}
           </Button>
           <Button asChild type="button" variant="outline">

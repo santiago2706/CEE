@@ -1,6 +1,6 @@
 import type { User } from '@cee/types';
-import { useAuthStore } from '@/store/authStore';
 
+/** Único usuario válido en modo mock (VITE_USE_MOCKS=true), cualquier contraseña. */
 export const mockAdminUser: User = {
   id: 'admin-001',
   name: 'José Espinoza',
@@ -8,8 +8,3 @@ export const mockAdminUser: User = {
   role: 'admin',
   avatarUrl: 'https://picsum.photos/seed/admin-jose-espinoza/100/100',
 };
-
-/** Simula el login del admin mientras no exista backend (Fase 6). */
-export function mockLogin() {
-  useAuthStore.getState().login(mockAdminUser);
-}

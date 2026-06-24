@@ -4,6 +4,7 @@ import { BookOpen, LayoutDashboard, LineChart, LogOut, Menu, X } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/authStore';
 
 const NAV_ITEMS = [
@@ -38,7 +39,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AdminLayout() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
 
   return (
     <div className="flex min-h-screen">
@@ -93,7 +94,14 @@ export function AdminLayout() {
 
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium">{user?.name}</span>
-            <Button variant="ghost" size="icon" aria-label="Cerrar sesion" onClick={logout}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Cerrar sesion"
+              onClick={() => {
+                void authService.logout();
+              }}
+            >
               <LogOut className="h-4 w-4" />
             </Button>
           </div>

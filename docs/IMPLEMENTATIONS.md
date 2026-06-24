@@ -925,6 +925,57 @@ Para el filtro de rango de fechas (opcional según el doc: "si da el tiempo"), s
 
 ---
 
+## Fase 7 — Mejoras de Home
+
+### ✅ Slider de eventos en la Home (Tarea 1 del documento de mejoras)
+
+**Estado:** Completada
+**Fecha:** 2026-06-23
+**Rama:** `feature/home-event-slider`
+
+#### Objetivo
+Crear `EventSlider`, un carrusel accesible como pieza central de la Home, que rota entre eventos del CEE (mock), navegable por teclado y táctil, con autoplay respetuoso de `prefers-reduced-motion` y lazy-load de imágenes.
+
+#### Decisión: `EventSlide` en `@cee/types`, no tipo local
+A diferencia de `CourseFormInput`/`SalesDateRange` (inputs de UI sin contraparte de backend), un evento de la Home es una entidad que razonablemente vivirá en una tabla real de Supabase en el futuro (como `Video`). Se siguió el mismo patrón que `Video`: campos en camelCase en inglés (`id`, `title`, `date`, `imageUrl`, `ctaLabel`, `ctaHref`), no los nombres en español sugeridos en el documento de mejoras (`titulo`, `fecha`, `imagen`, `cta`), para mantener consistencia con el resto de `@cee/types`.
+
+#### Decisión: crear `components/ui/carousel.tsx` (shadcn sobre Embla)
+No existía ningún carrusel en el proyecto. Se instaló `embla-carousel-react` + `embla-carousel-autoplay` (única dependencia nueva, ligera, pedida explícitamente por el documento de mejoras) y se generó `carousel.tsx` siguiendo el patrón estándar de shadcn/ui (mismo criterio que `sheet.tsx`, `accordion.tsx`: se crea, no se edita un archivo shadcn existente).
+
+#### Cambios realizados
+- **`packages/types/src/index.ts`:** nuevo `EventSlide` (`id`, `title`, `date`, `imageUrl`, `ctaLabel`, `ctaHref`)
+- **`apps/web/src/mocks/data/events.mock.ts`** (nuevo): `mockEvents`, 4 eventos de ejemplo; exportado desde `mocks/index.ts`
+- **`apps/web/src/services/events.service.ts`** (nuevo): `eventsService.getAll()`, mismo patrón mock/Supabase que `mediaService` (toggle por `VITE_USE_MOCKS`; rama real apunta a una futura tabla `events`)
+- **`apps/web/src/hooks/useEvents.ts`** (nuevo): wrapper `useState`/`useEffect` sobre el service, mismo patrón que `useCourses`
+- **`apps/web/src/components/ui/carousel.tsx`** (nuevo): `Carousel`, `CarouselContent`, `CarouselItem`, `CarouselPrevious`, `CarouselNext` sobre `embla-carousel-react`; navegación por teclado (flechas) vía `onKeyDownCapture`
+- **`apps/web/src/components/home/EventSlider.tsx`** (nuevo): consume `EventSlide[]`, usa `embla-carousel-autoplay` (pausa en hover/foco, `stopOnInteraction: false`) y se desactiva por completo si `prefers-reduced-motion: reduce`; primera imagen `loading="eager"`/`fetchPriority="high"`, resto `loading="lazy"`; overlay degradado en paleta `cee-ink`/`cee-red`, badge de fecha, CTA y dots de navegación
+- **`apps/web/src/pages/home/HomePage.tsx`:** se agregó la sección "Próximos eventos" con `EventSlider`, ubicada justo después del Hero (pieza central), antes de los logos institucionales; sin tocar el resto de secciones existentes
+
+#### Fix relacionado (no parte del alcance original, detectado al verificar en navegador): `apps/web/src/lib/supabase.ts`
+Al abrir la app en local (sin `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` configuradas, como en `.env` de desarrollo), `createClient(undefined, undefined, ...)` lanzaba `Error: supabaseUrl is required.` de forma síncrona. Como `main.tsx` llama a `authService.initSession()` (que importa `lib/supabase.ts`) **antes** de montar React, esto dejaba la app entera en blanco en cualquier ruta — no relacionado al carrusel, sino preexistente desde la migración a Supabase (`e713317`). Se agregó un fallback (`https://placeholder.supabase.co` / `placeholder-anon-key`) cuando esas env vars no están definidas; con `VITE_USE_MOCKS=true` ese cliente nunca se usa de verdad, así que es seguro, y deja de bloquear el arranque en cualquier entorno de desarrollo sin credenciales reales.
+
+#### Archivos nuevos
+- ✅ `apps/web/src/mocks/data/events.mock.ts`
+- ✅ `apps/web/src/services/events.service.ts`
+- ✅ `apps/web/src/hooks/useEvents.ts`
+- ✅ `apps/web/src/components/ui/carousel.tsx`
+- ✅ `apps/web/src/components/home/EventSlider.tsx`
+
+#### Archivos modificados
+- ✅ `packages/types/src/index.ts` (`EventSlide`)
+- ✅ `apps/web/src/mocks/index.ts`
+- ✅ `apps/web/src/pages/home/HomePage.tsx`
+- ✅ `apps/web/src/lib/supabase.ts` (fix de arranque, ver arriba)
+- ✅ `apps/web/package.json` / `pnpm-lock.yaml` (deps `embla-carousel-react`, `embla-carousel-autoplay`)
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ `pnpm --filter web dev`: `curl` a `/` responde `200`
+- ✅ No se editó ningún archivo existente de `components/ui/`
+- ⚠️ Sin `chromium-cli`/Playwright disponible en este entorno para capturar screenshot real del carrusel rotando; se recomienda una verificación visual manual en navegador antes de dar la tarea por cerrada del todo
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones

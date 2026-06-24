@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { X, Play } from 'lucide-react';
 import type { Video } from '@cee/types';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 interface VideoGalleryProps {
   videos: Video[];
@@ -8,6 +9,7 @@ interface VideoGalleryProps {
 
 export function VideoGallery({ videos }: VideoGalleryProps) {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const gridRef = useScrollReveal<HTMLDivElement>({ selector: ':scope > *' });
 
   const closeModal = useCallback(() => {
     setSelectedVideo(null);
@@ -15,26 +17,29 @@ export function VideoGallery({ videos }: VideoGalleryProps) {
 
   return (
     <>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div ref={gridRef} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {videos.map((video) => (
           <article
             key={video.id}
             className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card transition hover:-translate-y-0.5 hover:border-cee-red/40"
             onClick={() => setSelectedVideo(video)}
           >
-            <div className="relative h-48 w-full overflow-hidden bg-muted">
+            <div
+              className="relative w-full overflow-hidden bg-muted"
+              style={{ aspectRatio: '16 / 9' }}
+            >
               <img
                 src={video.thumbnailUrl}
                 alt={video.title}
                 className="h-full w-full object-cover transition group-hover:scale-105"
                 loading="lazy"
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/30">
+              <div className="absolute inset-0 flex items-center justify-center bg-[rgba(26,20,20,0)] transition group-hover:bg-[rgba(26,20,20,0.35)]">
                 <Play className="h-12 w-12 text-white opacity-0 transition group-hover:opacity-100" />
               </div>
             </div>
             <div className="p-4">
-              <h3 className="font-semibold line-clamp-2">{video.title}</h3>
+              <h3 className="line-clamp-2 font-semibold">{video.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
                 {video.description}
               </p>
@@ -58,7 +63,7 @@ export function VideoGallery({ videos }: VideoGalleryProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/20 p-4">
-              <h2 className="text-lg font-semibold text-white">{selectedVideo.title}</h2>
+              <h2 className="text-lg text-white">{selectedVideo.title}</h2>
               <button
                 onClick={closeModal}
                 className="rounded-lg p-1 hover:bg-white/10"

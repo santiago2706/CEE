@@ -97,6 +97,17 @@ export interface Sale {
   status: 'completed' | 'pending' | 'refunded';
 }
 
+// ---------- Eventos (Home slider) ----------
+
+export interface EventSlide {
+  id: string;
+  title: string;
+  date: string; // ISO date, ej. "2026-08-15"
+  imageUrl: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
 // ---------- Media / Videos ----------
 
 export interface Video {

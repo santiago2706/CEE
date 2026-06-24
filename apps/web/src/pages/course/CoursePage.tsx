@@ -6,6 +6,7 @@ import { SyllabusAccordion } from '@/components/course/SyllabusAccordion';
 import { TeacherCard } from '@/components/course/TeacherCard';
 import { ROUTES } from '@/constants/routes';
 import { useCourseDetail } from '@/hooks/useCourseDetail';
+import { CATEGORY_GRADIENTS } from '@/constants/category-gradients';
 
 export default function CoursePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -37,11 +38,27 @@ export default function CoursePage() {
         ]}
       />
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-3">
+      <div
+        className="mt-6 w-full overflow-hidden rounded-lg bg-cover bg-center"
+        style={{ aspectRatio: '16 / 9', backgroundImage: CATEGORY_GRADIENTS[course.category] }}
+      >
+        <img
+          src={course.imageUrl}
+          alt={course.title}
+          className="h-full w-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      </div>
+
+      <div className="mt-10 grid gap-10 lg:grid-cols-3">
         <div className="space-y-10 lg:col-span-2">
           <div>
             <Badge className="mb-3">{course.category}</Badge>
-            <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>
+            <h1 className="text-3xl sm:text-4xl">{course.title}</h1>
             <p className="mt-4 text-muted-foreground">{course.description}</p>
           </div>
 

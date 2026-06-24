@@ -3,6 +3,7 @@ import type { Course } from '@cee/types';
 import { ROUTES } from '@/constants/routes';
 import { formatPrice } from '@/lib/utils';
 import { buildInscripcionUrl } from '@/lib/inscripcion';
+import { CATEGORY_GRADIENTS } from '@/constants/category-gradients';
 
 interface CourseCardProps {
   course: Course;
@@ -18,13 +19,21 @@ export function CourseCard({ course }: CourseCardProps) {
   };
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground transition-shadow duration-200 hover:shadow-md">
-      <img
-        src={course.imageUrl ?? '/placeholder-course.jpg'}
-        alt={course.title}
-        className="h-44 w-full object-cover"
-        loading="lazy"
-      />
+    <article className="flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground transition duration-200 hover:-translate-y-1 hover:shadow-md">
+      <div
+        className="w-full bg-cover bg-center"
+        style={{ aspectRatio: '16 / 9', backgroundImage: CATEGORY_GRADIENTS[course.category] }}
+      >
+        <img
+          src={course.imageUrl}
+          alt={course.title}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      </div>
       <div className="flex flex-1 flex-col gap-3 p-5">
         <span className="w-fit rounded-full border border-cee-red/30 bg-transparent px-3 py-1 text-xs font-semibold uppercase text-cee-red">
           {course.category}
@@ -60,7 +69,7 @@ export function CourseCard({ course }: CourseCardProps) {
           <button
             type="button"
             onClick={handleInscribirse}
-            className="flex-1 rounded-md bg-cee-red px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-cee-red-dark"
+            className="flex-1 rounded-md bg-cee-red px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:scale-[1.02] hover:bg-cee-red-dark"
           >
             Inscribirme
           </button>

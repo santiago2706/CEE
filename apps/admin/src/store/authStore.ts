@@ -4,19 +4,20 @@ import type { User } from '@cee/types';
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  isLoading: boolean;
+  setUser: (user: User | null) => void;
 }
 
+const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
+
 /**
- * Auth mock de Fase 5: en memoria, sin localStorage. El admin se "loguea"
- * vía mockLogin() (src/mocks/auth.ts) al levantar la app; no persiste entre
- * refrescos (la regla del repo solo autoriza localStorage en
- * apps/web/src/store/authStore.ts). Persistencia real llega en Fase 6.
+ * isLoading arranca en true en modo real porque ProtectedRoute necesita esperar
+ * a que se resuelva la sesión de Supabase + el perfil antes de decidir si deja
+ * pasar al backoffice. En modo mock no hay nada que esperar.
  */
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  login: (user) => set({ user, isAuthenticated: true }),
-  logout: () => set({ user: null, isAuthenticated: false }),
+  isLoading: !USE_MOCKS,
+  setUser: (user) => set({ user, isAuthenticated: Boolean(user), isLoading: false }),
 }));

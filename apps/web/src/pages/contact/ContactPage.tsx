@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { Mail, MapPin, Phone, BookOpen } from 'lucide-react';
+import { Mail, MapPin, Phone, BookOpen, Clock } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -251,6 +252,15 @@ export default function ContactPage() {
                 <Phone className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
                 <span>{CONTACT_INFO.phone}</span>
               </div>
+              <a
+                href={CONTACT_INFO.whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-start gap-3 hover:text-cee-red"
+              >
+                <WhatsAppIcon className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+                <span>WhatsApp</span>
+              </a>
               <div className="flex items-start gap-3">
                 <Mail className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
                 <span>{CONTACT_INFO.email}</span>
@@ -258,6 +268,10 @@ export default function ContactPage() {
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
                 <span>{CONTACT_INFO.address}</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <Clock className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+                <span>{CONTACT_INFO.schedule}</span>
               </div>
             </CardContent>
           </Card>

@@ -1,6 +1,5 @@
 import type { ApiResponse, ContactLead } from '@cee/types';
-import { API_ENDPOINTS } from '@/constants/api.constants';
-import { api } from '@/services/api';
+import { supabase } from '@/lib/supabase';
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 
@@ -26,8 +25,9 @@ function validateLead(data: Omit<ContactLead, 'id' | 'createdAt'>): void {
 
 export const contactService = {
   async send(data: Omit<ContactLead, 'id' | 'createdAt'>): Promise<ApiResponse<ContactLead>> {
+    validateLead(data);
+
     if (USE_MOCKS) {
-      validateLead(data);
       const lead: ContactLead = {
         ...data,
         id: `mock-lead-${Date.now()}`,
@@ -35,7 +35,21 @@ export const contactService = {
       };
       return delay({ data: lead });
     }
-    const response = await api.post<ApiResponse<ContactLead>>(API_ENDPOINTS.CONTACT, data);
-    return response.data;
+
+    // Sin .select(): la policy de contact_leads solo permite SELECT a admins,
+    // así que no se puede leer de vuelta la fila recién insertada como anónimo.
+    const { error } = await supabase.from('contact_leads').insert({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      subject: data.subject,
+      course_interest: data.courseInterest,
+      message: data.message,
+    });
+
+    if (error) {
+      throw new Error('No se pudo enviar el mensaje. Intenta nuevamente.');
+    }
+    return { data: { ...data, id: '', createdAt: new Date().toISOString() } };
   },
 };
