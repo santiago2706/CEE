@@ -8,6 +8,8 @@ const HomePage = lazy(() => import('@/pages/home/HomePage'));
 const CatalogPage = lazy(() => import('@/pages/catalog/CatalogPage'));
 const CoursePage = lazy(() => import('@/pages/course/CoursePage'));
 const AboutPage = lazy(() => import('@/pages/about/AboutPage'));
+const BlogPage = lazy(() => import('@/pages/blog/BlogPage'));
+const BlogPostPage = lazy(() => import('@/pages/blog/BlogPostPage'));
 const MultimediaPage = lazy(() => import('@/pages/multimedia/MultimediaPage'));
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -26,6 +28,8 @@ export const router = createBrowserRouter([
       { path: ROUTES.CATALOG, element: withSuspense(<CatalogPage />) },
       { path: ROUTES.COURSE, element: withSuspense(<CoursePage />) },
       { path: ROUTES.ABOUT, element: withSuspense(<AboutPage />) },
+      { path: ROUTES.BLOG, element: withSuspense(<BlogPage />) },
+      { path: ROUTES.BLOG_POST, element: withSuspense(<BlogPostPage />) },
       { path: ROUTES.MULTIMEDIA, element: withSuspense(<MultimediaPage />) },
       { path: ROUTES.CONTACT, element: withSuspense(<ContactPage />) },
       { path: ROUTES.LOGIN, element: withSuspense(<LoginPage />) },

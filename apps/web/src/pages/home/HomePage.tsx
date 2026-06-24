@@ -5,18 +5,22 @@ import type { CourseCategory } from '@cee/types';
 import { CourseCard } from '@/components/shared/CourseCard';
 import { CourseFilter } from '@/components/shared/CourseFilter';
 import { EventSlider } from '@/components/home/EventSlider';
+import { LatestBlogPosts } from '@/components/home/LatestBlogPosts';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useCourses } from '@/hooks/useCourses';
 import { useEvents } from '@/hooks/useEvents';
+import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const FEATURED_COUNT = 6;
+const LATEST_POSTS_COUNT = 3;
 
 export default function HomePage() {
   const [category, setCategory] = useState<CourseCategory | 'Todas'>('Todas');
   const { courses, isLoading } = useCourses({ category });
   const { events } = useEvents();
+  const { posts: latestPosts } = useBlogPosts({ limit: LATEST_POSTS_COUNT });
   const heroRef = useRef<HTMLDivElement>(null);
   const coursesGridRef = useScrollReveal<HTMLDivElement>({ selector: ':scope > *' });
 
@@ -101,6 +105,18 @@ export default function HomePage() {
           <Button asChild variant="outline" size="lg">
             <Link to={ROUTES.CATALOG}>Ver más</Link>
           </Button>
+        </div>
+      </section>
+
+      <section className="bg-muted/50 py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 flex flex-col gap-1 sm:mb-8">
+            <p className="text-xs font-medium uppercase tracking-widest text-cee-red">
+              Desde el blog
+            </p>
+            <h2 className="text-2xl sm:text-3xl">Últimas publicaciones</h2>
+          </div>
+          <LatestBlogPosts posts={latestPosts} />
         </div>
       </section>
     </>

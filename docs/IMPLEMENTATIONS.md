@@ -976,6 +976,78 @@ Al abrir la app en local (sin `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` confi
 
 ---
 
+### ✅ Ajustes posteriores al slider (eliminar aliados, pulir visual) — sesiones siguientes
+
+**Estado:** Completada
+**Fecha:** 2026-06-23/24
+
+#### Cambios realizados
+- Se eliminó la sección "Con el respaldo de" (logos de aliados/`InstitutionalLogos`) de la **Home** y del **Footer** (sigue usándose en `AboutPage`, no se tocó ahí)
+- `EventSlider.tsx`: zoom Ken Burns sutil en la imagen activa (respeta `prefers-reduced-motion`), contador "01/04", flechas prev/next visibles por defecto en móvil (antes solo con hover, inútil en táctil), tipografía más grande, `shadow-xl`/`ring-1` en el contenedor
+- `Footer.tsx`: fondo con degradado `cee-red → cee-red-dark`, grid de 12 columnas asimétrico, contacto con íconos y links reales (`mailto:`, WhatsApp), redes sociales junto a la marca
+- Fix adicional: `apps/admin/src/lib/supabase.ts` tenía el mismo bug que `apps/web/src/lib/supabase.ts` (createClient sin fallback, crash en boot sin credenciales reales) — mismo fix de fallback aplicado ahí también
+
+#### Archivos modificados
+- ✅ `apps/web/src/pages/home/HomePage.tsx`, `apps/web/src/components/home/EventSlider.tsx`
+- ✅ `apps/web/src/components/layout/Footer.tsx`
+- ✅ `apps/admin/src/lib/supabase.ts`
+
+---
+
+## Fase 8 — Sección "Nosotros" + Blog
+
+### ✅ Sección "Nosotros" (lenguaje de marca) + Blog (Tarea 4 del documento de mejoras)
+
+**Estado:** Completada
+**Fecha:** 2026-06-24
+**Rama:** `feat/about-section`
+
+#### Objetivo
+"Nosotros" ya existía con misión/visión/historia/valores; faltaba el lenguaje de marca explícito. La pieza nueva es el **Blog**: listado con tarjetas, 3 más recientes en Home con "Ver todo el blog", y páginas `/blog` (lista) y `/blog/:slug` (detalle).
+
+#### Decisión: `BlogPost` en `@cee/types` (preparado para backend, como pide el documento)
+Mismo criterio que `EventSlide`/`Video`: es contenido que en el futuro vendrá de una tabla real (`blog_posts`), no un input de UI. Campos en camelCase en inglés (`id`, `slug`, `title`, `summary`, `content`, `imageUrl`, `date`, `author`), no los nombres en español del documento de mejoras (`titulo`, `resumen`, `imagen`, `fecha`), por consistencia con el resto de `@cee/types`. Se agregó `content` (no estaba en el spec literal) porque la página de detalle (`/blog/:slug`) necesita el cuerpo completo del artículo, no solo el resumen de la tarjeta.
+
+#### Cambios realizados
+- **`packages/types/src/index.ts`:** nuevo `BlogPost`
+- **`apps/web/src/constants/routes.ts`:** `BLOG: '/blog'`, `BLOG_POST: '/blog/:slug'`
+- **`apps/web/src/config/navigation.ts`:** se agregó "Blog" a `navigationLinks` (visible en Navbar/MobileMenu/Footer sin duplicar la lista, ya que es una sección de primer nivel con rutas propias, no un filtro)
+- **`apps/web/src/mocks/data/blog.mock.ts`** (nuevo): `mockBlogPosts`, 4 artículos completos (resumen + contenido + autor); exportado desde `mocks/index.ts`
+- **`apps/web/src/services/blog.service.ts`** (nuevo): `getAll()`, `getLatest(count)`, `getBySlug(slug)` — mismo patrón mock/Supabase que `coursesService`/`eventsService` (toggle por `VITE_USE_MOCKS`; rama real apunta a una futura tabla `blog_posts`)
+- **`apps/web/src/hooks/useBlogPosts.ts`** (nuevo): lista, con `limit` opcional para "últimas N" en Home
+- **`apps/web/src/hooks/useBlogPost.ts`** (nuevo): detalle por slug, mismo patrón que `useCourseDetail`
+- **`apps/web/src/components/blog/BlogCard.tsx`** (nuevo): tarjeta de entrada (imagen, fecha, título, resumen, "Leer más"), estilo consistente con `CourseCard`
+- **`apps/web/src/components/home/LatestBlogPosts.tsx`** (nuevo): grid de tarjetas + botón "Ver todo el blog" → `ROUTES.BLOG`
+- **`apps/web/src/pages/blog/BlogPage.tsx`** (nuevo): listado completo (`/blog`)
+- **`apps/web/src/pages/blog/BlogPostPage.tsx`** (nuevo): detalle (`/blog/:slug`) con `Breadcrumb` (mismo componente que `CoursePage`), imagen, fecha/autor y contenido en párrafos
+- **`apps/web/src/router/index.tsx`:** rutas `ROUTES.BLOG`/`ROUTES.BLOG_POST` con `lazy()` + `Suspense`, mismo patrón que el resto
+- **`apps/web/src/pages/home/HomePage.tsx`:** nueva sección "Últimas publicaciones" (3 más recientes) antes del cierre de la página
+- **`apps/web/src/pages/about/AboutPage.tsx`:** se agregó el lenguaje de marca *"Impulsa tu carrera, lidera tu futuro"* como subtítulo destacado del hero, y se reforzó el vínculo explícito con UNI/FIIS en el párrafo de presentación
+
+#### Archivos nuevos
+- ✅ `apps/web/src/mocks/data/blog.mock.ts`
+- ✅ `apps/web/src/services/blog.service.ts`
+- ✅ `apps/web/src/hooks/useBlogPosts.ts`, `useBlogPost.ts`
+- ✅ `apps/web/src/components/blog/BlogCard.tsx`
+- ✅ `apps/web/src/components/home/LatestBlogPosts.tsx`
+- ✅ `apps/web/src/pages/blog/BlogPage.tsx`, `BlogPostPage.tsx`
+
+#### Archivos modificados
+- ✅ `packages/types/src/index.ts` (`BlogPost`)
+- ✅ `apps/web/src/constants/routes.ts`, `apps/web/src/config/navigation.ts`
+- ✅ `apps/web/src/mocks/index.ts`
+- ✅ `apps/web/src/router/index.tsx`
+- ✅ `apps/web/src/pages/home/HomePage.tsx`
+- ✅ `apps/web/src/pages/about/AboutPage.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ `curl` a `/`, `/blog`, `/blog/liderazgo-ejecutivo-en-tiempos-de-cambio` y `/nosotros` responde `200`
+- ✅ No se editó ningún archivo existente de `components/ui/`
+- ⚠️ Sin `chromium-cli`/Playwright en este entorno; se recomienda verificación visual manual en navegador
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
