@@ -976,6 +976,85 @@ Al abrir la app en local (sin `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` confi
 
 ---
 
+### ✅ Scroll-snap inteligente por sección en la Home (Tarea 2 del documento de mejoras)
+
+**Estado:** Completada
+**Fecha:** 2026-06-24
+**Rama:** `feature/fullsection-scroll-snap`
+
+#### Objetivo
+Que el viewport "encaje" al inicio de cada sección de la Home en desktop sin secuestrar el scroll del usuario, sin recortar contenido alto, con comportamiento relajado en móvil y respetando `prefers-reduced-motion`; más un indicador "scroll ↓" en el Hero y anclas laterales que reflejan la sección activa.
+
+#### Decisión: `scroll-snap-type: y proximity` (no `mandatory`)
+El documento de mejoras cierra esta decisión explícitamente: `proximity` encaja al acercarse sin bloquear el scroll, y cada `.snap-section` usa `min-height: 100svh` (no `height`), de forma que el snap solo fija el **inicio** de la sección — las secciones con contenido largo (p. ej. el grid de cursos) pueden crecer más allá del viewport sin cortarse.
+
+#### Decisión: el `scroll-snap-type` real se aplica en `html`, no en el `<div>` de Home
+`Layout.tsx` no tiene un contenedor con `overflow-y` propio (`Navbar` + `<main className="flex-1">` + `Footer` dentro de un `div min-h-screen flex flex-col`), así que el elemento que realmente scrollea es el documento (`html`). Se usó el selector `html:has(.snap-container)` para que el snap solo se active en páginas que renderizan el contenedor (la Home), sin tocar `Layout.tsx` ni afectar otras rutas.
+
+#### Cambios realizados
+- **`apps/web/src/index.css`:** utilidades `.snap-container` (`scroll-snap-type: y proximity`, `scroll-padding-top: 4rem` para compensar el Navbar `sticky top-0`) y `.snap-section` (`scroll-snap-align: start`, `min-height: 100svh`); `html:has(.snap-container)` replica el `scroll-snap-type` en el verdadero contenedor de scroll; desactivado bajo `prefers-reduced-motion: reduce` y relajado (`scroll-snap-type: none`, `min-height: auto`) por debajo de `768px`
+- **`apps/web/src/hooks/useActiveSection.ts`** (nuevo): hook que observa una lista de `id`s de sección con `IntersectionObserver` (`threshold: [0.3, 0.5, 0.7]`, `rootMargin: '-10% 0px -10% 0px'`) y devuelve el `id` más visible
+- **`apps/web/src/components/home/SectionAnchors.tsx`** (nuevo): dots fijos a la derecha (`fixed right-4 top-1/2`, visibles solo desde `lg`) que navegan por ancla (`href="#id"`) y resaltan el activo (color guinda + escala); tooltip accesible al hover/focus, `aria-current` en el activo
+- **`apps/web/src/components/home/ScrollHint.tsx`** (nuevo): indicador "Scroll ↓" con flecha, ancla a `#eventos`, animación `motion-safe:animate-bounce` (no anima si `prefers-reduced-motion: reduce`)
+- **`apps/web/src/pages/home/HomePage.tsx`:** el contenedor raíz pasa de `<>...</>` a `<div className="snap-container">`; cada `<section>` existente (Hero, Eventos, Programas) recibe `id` (`hero`/`eventos`/`programas`) y la clase `snap-section`; se monta `<SectionAnchors sections={SECTION_ANCHORS} />` y `<ScrollHint />` dentro del Hero
+
+#### Alcance respetado
+Solo existen 3 secciones en la Home a la fecha de esta tarea (Hero, Eventos, Programas) — las secciones de "Nosotros", Blog y CTA de cierre (Tareas 4 y 9 del documento de mejoras) todavía no existen, así que `SECTION_ANCHORS` y el snap se limitan a las 3 secciones actuales. Cuando se agreguen las secciones restantes, deben sumarse a `SECTION_ANCHORS` y recibir `id` + `snap-section` siguiendo el mismo patrón.
+
+#### Archivos nuevos
+- ✅ `apps/web/src/hooks/useActiveSection.ts`
+- ✅ `apps/web/src/components/home/SectionAnchors.tsx`
+- ✅ `apps/web/src/components/home/ScrollHint.tsx`
+
+#### Archivos modificados
+- ✅ `apps/web/src/index.css` (`.snap-container`, `.snap-section`, media queries de `prefers-reduced-motion` y móvil)
+- ✅ `apps/web/src/pages/home/HomePage.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web build`: compila sin errores nuevos
+- ✅ Las 3 secciones de la Home tienen `id` único y clase `snap-section`
+- ✅ El snap se desactiva completamente bajo `prefers-reduced-motion: reduce` y por debajo de `768px` (scroll natural en móvil, sin `min-height` forzado)
+- ⚠️ Sin navegador real disponible en este entorno para grabar el comportamiento de snap en vivo; se recomienda verificación visual manual (desktop con scroll, DevTools con "reduced motion" forzado, y viewport móvil) antes de cerrar la tarea del todo
+
+---
+
+### ✅ Cierre de referencias residuales a carrito/compra (Tarea 3 del documento de mejoras)
+
+**Estado:** Completada
+**Fecha:** 2026-06-24
+**Rama:** `refactor/remove-cart-and-purchase`
+
+#### Objetivo
+El carrito y la compra dentro del sitio fueron eliminados en Fase 2/4 (ver entradas arriba), pero la Tarea 3 del documento de mejoras pedía cerrar dos cabos sueltos que esas fases no cubrieron: precios tachados todavía visibles (residuo visual de la idea de "oferta de compra") y la Fase 4 del plan original (`docs/PLAN_IMPLEMENTACION_CEE_WEB.md`) seguía describiendo `cartStore`/checkout como si estuvieran en alcance.
+
+#### Verificación previa (sin cambios de código necesarios)
+- `cartStore.ts`, `CartItem`, badge de carrito en Navbar: ya no existen (Fase 2)
+- Ningún `Checkout` en código
+- CTA en `CourseCard`/`CourseSidebar` ya era "Inscribirme" → `/contacto?curso=<id>` vía `buildInscripcionUrl` (Fase 4), no un flujo de compra
+
+#### Cambios realizados
+
+##### 1. `apps/web/src/components/shared/CourseCard.tsx` y `apps/web/src/components/course/CourseSidebar.tsx`
+- Quitado el bloque `course.originalPrice ? <p className="line-through">...</p> : null` en ambos componentes — solo queda el precio actual (`course.price`)
+- **Decisión:** no se tocó `originalPrice` en `@cee/types`, `courses.service.ts`, ni en los mocks de `apps/web`/`apps/admin` — el campo sigue siendo parte legítima del contrato `Course` (el admin puede seguir gestionándolo como "precio anterior" en reportes/CRUD); lo que se eliminó es su efecto visual de "oferta tachada" en la UI pública, que es lo que el documento de mejoras asocia explícitamente a "referencias a compra"
+
+##### 2. `docs/PLAN_IMPLEMENTACION_CEE_WEB.md` — actualizado
+- La sección "Fase 4 — Carrito y flujo de conversión" se renombra a "~~Carrito y flujo de conversión~~ → FUERA DE ALCANCE", con nota explicando la decisión de producto y el reemplazo real (flujo "Inscribirme" → `/contacto?curso=<id>`)
+- La tabla de "Frentes de trabajo" (Fase 3) actualizada: la fila 1 (Home + CourseCard) y la fila 3 (Detalle de curso) ya no mencionan "botón Añadir" ni "carrito" en el sidebar, reemplazadas por "Inscribirme"
+
+#### Archivos modificados
+- ✅ `apps/web/src/components/shared/CourseCard.tsx`
+- ✅ `apps/web/src/components/course/CourseSidebar.tsx`
+- ✅ `docs/PLAN_IMPLEMENTACION_CEE_WEB.md`
+
+#### Verificación
+- ✅ `pnpm --filter web build`: sin errores nuevos
+- ✅ `grep` de `cart`/`carrito`/`Cart` en `apps/web/src`, `apps/admin/src`, `packages/types/src`: sin hits reales (único hit en código vivo es "Cartas de control" en `SalesTrendChart.tsx`, contexto de control estadístico, no relacionado)
+- ✅ `grep` de `checkout` (case-insensitive) en `apps/web/src`, `apps/admin/src`: sin hits
+- ✅ Sin precios tachados visibles en `CourseCard`/`CourseSidebar`; el precio mostrado es únicamente `course.price`
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones

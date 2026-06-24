@@ -49,14 +49,7 @@ export function CourseCard({ course }: CourseCardProps) {
 
         {/* Precio + botones — empujados al fondo de la card */}
         <div className="mt-auto flex items-center justify-between">
-          <div>
-            {course.originalPrice ? (
-              <p className="text-sm text-muted-foreground line-through">
-                {formatPrice(course.originalPrice)}
-              </p>
-            ) : null}
-            <p className="text-lg font-bold text-cee-red">{formatPrice(course.price)}</p>
-          </div>
+          <p className="text-lg font-bold text-cee-red">{formatPrice(course.price)}</p>
         </div>
 
         <div className="flex gap-2">

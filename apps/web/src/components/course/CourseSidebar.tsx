@@ -12,14 +12,7 @@ interface CourseSidebarProps {
 export function CourseSidebar({ course }: CourseSidebarProps) {
   return (
     <aside className="space-y-4 rounded-lg border bg-card p-6">
-      <div>
-        {course.originalPrice ? (
-          <p className="text-sm text-muted-foreground line-through">
-            {formatPrice(course.originalPrice)}
-          </p>
-        ) : null}
-        <p className="text-3xl font-bold text-cee-red">{formatPrice(course.price)}</p>
-      </div>
+      <p className="text-3xl font-bold text-cee-red">{formatPrice(course.price)}</p>
 
       <Button asChild className="w-full">
         <Link to={buildInscripcionUrl(course.id)}>Inscribirme</Link>

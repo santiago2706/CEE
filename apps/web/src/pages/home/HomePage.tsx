@@ -5,6 +5,8 @@ import type { CourseCategory } from '@cee/types';
 import { CourseCard } from '@/components/shared/CourseCard';
 import { CourseFilter } from '@/components/shared/CourseFilter';
 import { EventSlider } from '@/components/home/EventSlider';
+import { ScrollHint } from '@/components/home/ScrollHint';
+import { SectionAnchors } from '@/components/home/SectionAnchors';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useCourses } from '@/hooks/useCourses';
@@ -12,6 +14,12 @@ import { useEvents } from '@/hooks/useEvents';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const FEATURED_COUNT = 6;
+
+const SECTION_ANCHORS = [
+  { id: 'hero', label: 'Inicio' },
+  { id: 'eventos', label: 'Eventos' },
+  { id: 'programas', label: 'Programas' },
+];
 
 export default function HomePage() {
   const [category, setCategory] = useState<CourseCategory | 'Todas'>('Todas');
@@ -36,8 +44,13 @@ export default function HomePage() {
   }, []);
 
   return (
-    <>
-      <section className="relative overflow-hidden bg-cee-red text-white">
+    <div className="snap-container">
+      <SectionAnchors sections={SECTION_ANCHORS} />
+
+      <section
+        id="hero"
+        className="snap-section relative flex items-center overflow-hidden bg-cee-red text-white"
+      >
         <div
           className="absolute inset-y-0 right-0 hidden w-3/5 sm:block sm:[clip-path:polygon(15%_0,100%_0,100%_100%,0_100%)]"
           style={{ aspectRatio: '16 / 10' }}
@@ -65,9 +78,14 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
+
+        <ScrollHint />
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <section
+        id="eventos"
+        className="snap-section mx-auto flex max-w-7xl flex-col justify-center px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
+      >
         <div className="mb-6 flex flex-col gap-1 sm:mb-8">
           <p className="text-xs font-medium uppercase tracking-widest text-cee-red">
             Agenda CEE
@@ -77,7 +95,10 @@ export default function HomePage() {
         <EventSlider events={events} />
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section
+        id="programas"
+        className="snap-section mx-auto flex max-w-7xl flex-col justify-center px-4 py-16 sm:px-6 lg:px-8"
+      >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-2xl">Programas destacados</h2>
           <CourseFilter value={category} onChange={setCategory} />
@@ -103,6 +124,6 @@ export default function HomePage() {
           </Button>
         </div>
       </section>
-    </>
+    </div>
   );
 }

@@ -103,3 +103,39 @@
 .logo-wordmark {
   font-family: 'Poppins', sans-serif;
 }
+
+.snap-container {
+  scroll-snap-type: y proximity;
+  scroll-padding-top: 4rem;
+}
+
+html:has(.snap-container) {
+  scroll-snap-type: y proximity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.snap-container) {
+    scroll-snap-type: none;
+  }
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  min-height: 100svh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snap-container {
+    scroll-snap-type: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .snap-container {
+    scroll-snap-type: none;
+  }
+
+  .snap-section {
+    min-height: auto;
+  }
+}
