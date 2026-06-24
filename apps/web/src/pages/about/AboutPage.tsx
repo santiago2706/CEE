@@ -41,9 +41,13 @@ export default function AboutPage() {
           <h1 className="text-4xl leading-tight sm:text-5xl">
             Centro de Especialización Ejecutiva
           </h1>
+          <p className="mt-3 text-xl font-semibold italic text-white/95 sm:text-2xl">
+            "Impulsa tu carrera, lidera tu futuro"
+          </p>
           <p className="mt-4 text-lg text-white/90">
             Formando líderes y profesionales a través de educación ejecutiva de primer nivel desde
-            1999
+            1999, en alianza con la Universidad Nacional de Ingeniería (UNI) y la Facultad de
+            Ingeniería Industrial y de Sistemas (FIIS)
           </p>
         </div>
       </section>

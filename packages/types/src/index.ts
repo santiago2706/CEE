@@ -98,6 +98,18 @@ export interface Sale {
   status: 'completed' | 'pending' | 'refunded';
 }
 
+// ---------- Blog ----------
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  imageUrl: string;
+  date: string; // ISO date, ej. "2026-06-10"
+  slug: string;
+}
+
 // ---------- Eventos (Home slider) ----------
 
 export interface EventSlide {

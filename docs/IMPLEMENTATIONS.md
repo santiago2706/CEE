@@ -976,6 +976,24 @@ Al abrir la app en local (sin `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` confi
 
 ---
 
+### ✅ Ajustes posteriores al slider (eliminar aliados, pulir visual) — sesiones siguientes
+
+**Estado:** Completada
+**Fecha:** 2026-06-23/24
+
+#### Cambios realizados
+- Se eliminó la sección "Con el respaldo de" (logos de aliados/`InstitutionalLogos`) de la **Home** y del **Footer** (sigue usándose en `AboutPage`, no se tocó ahí)
+- `EventSlider.tsx`: zoom Ken Burns sutil en la imagen activa (respeta `prefers-reduced-motion`), contador "01/04", flechas prev/next visibles por defecto en móvil (antes solo con hover, inútil en táctil), tipografía más grande, `shadow-xl`/`ring-1` en el contenedor
+- `Footer.tsx`: fondo con degradado `cee-red → cee-red-dark`, grid de 12 columnas asimétrico, contacto con íconos y links reales (`mailto:`, WhatsApp), redes sociales junto a la marca
+- Fix adicional: `apps/admin/src/lib/supabase.ts` tenía el mismo bug que `apps/web/src/lib/supabase.ts` (createClient sin fallback, crash en boot sin credenciales reales) — mismo fix de fallback aplicado ahí también
+
+#### Archivos modificados
+- ✅ `apps/web/src/pages/home/HomePage.tsx`, `apps/web/src/components/home/EventSlider.tsx`
+- ✅ `apps/web/src/components/layout/Footer.tsx`
+- ✅ `apps/admin/src/lib/supabase.ts`
+
+---
+
 ### ✅ Scroll-snap inteligente por sección en la Home (Tarea 2 del documento de mejoras)
 
 **Estado:** Completada
