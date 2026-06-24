@@ -1,4 +1,4 @@
-import ceeLogo from '@/assets/icons/logo2.png';
+import ceeLogo from '@/assets/icons/logo1.png';
 import uniLogo from '@/assets/icons/uni-logo.png';
 import ccatLogo from '@/assets/icons/ccat-logo.png';
 

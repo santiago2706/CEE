@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { authService } from '@/services/auth.service';
 import { cn } from '@/lib/utils';
-import logoMark from '@/assets/icons/logo2.png';
+import logoMark from '@/assets/icons/logo2.svg';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
