@@ -15,17 +15,24 @@ export function useActiveSection(sectionIds: string[]) {
 
     function getMostVisible(): string | null {
       let bestId: string | null = null;
-      let bestVisible = -1;
+      let minDistance = Infinity;
+      // El punto objetivo es justo debajo del navbar (aprox 64px + margen)
+      const TARGET_Y = 100;
 
       for (const id of ids) {
         const el = document.getElementById(id);
         if (!el) continue;
         const rect = el.getBoundingClientRect();
-        // Píxeles visibles en el viewport
-        const visible =
-          Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
-        if (visible > bestVisible) {
-          bestVisible = visible;
+        
+        // Si el punto objetivo está dentro de esta sección, es la activa
+        if (rect.top <= TARGET_Y && rect.bottom > TARGET_Y) {
+          return id;
+        }
+
+        // Fallback: si ninguna cubre el punto, buscamos la que tenga su borde superior más cerca
+        const dist = Math.abs(rect.top - TARGET_Y);
+        if (dist < minDistance) {
+          minDistance = dist;
           bestId = id;
         }
       }
