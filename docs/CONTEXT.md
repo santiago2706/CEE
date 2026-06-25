@@ -163,7 +163,7 @@ Decisiones abiertas a cerrar (orden de urgencia):
 
 Trabajo preparado para fases futuras (aún mock/stub): capa mock de services, `authStore` (lógica real ya migrada a Supabase, ver Fase 6), flujo JWT completo, SEO/meta tags y accesibilidad (Fase 7).
 
-**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca ya viven en `cee.red.{50..900}` (Tailwind), Iniciativa A (Hero) ✅, Blog (Iniciativa C) ✅, Iniciativa B (Navbar doble logo) ✅ parcial (logo UNI en PNG, pendiente SVG oficial) — pendientes D (Testimonios), E (Contacto/Footer), F (Profesores) y G (WhatsApp flotante).
+**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca en `cee.red.{50..900}` + `cee.surface.{cream,grey}` (Tailwind), Iniciativa A (Hero) ✅, B (Navbar doble logo) ✅ parcial (logo UNI en PNG, pendiente SVG oficial), C (cards de Blog pulidas) ✅ — pendientes D (Testimonios), E (Contacto/Footer), F (Profesores) y G (WhatsApp flotante).
 
 ---
 

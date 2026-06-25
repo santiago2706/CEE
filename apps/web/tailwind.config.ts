@@ -76,6 +76,12 @@ const config = {
           gray: '#A9A9A9',
           ink: '#000000',
         },
+        surface: {
+          // Fondos de sección alternos al blanco (Iniciativas C/E del plan de mejoras),
+          // derivados del manual de marca, no colores nuevos.
+          cream: '#FAF6EE',
+          grey: '#F3F1EF',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],

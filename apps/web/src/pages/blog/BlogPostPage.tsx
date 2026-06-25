@@ -2,12 +2,7 @@ import { useParams } from 'react-router-dom';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { ROUTES } from '@/constants/routes';
 import { useBlogPost } from '@/hooks/useBlogPost';
-
-const dateFormatter = new Intl.DateTimeFormat('es-PE', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
+import { formatDateLong } from '@/lib/utils';
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -39,8 +34,8 @@ export default function BlogPostPage() {
         ]}
       />
 
-      <p className="mt-6 text-xs font-medium uppercase tracking-widest text-cee-red">
-        {dateFormatter.format(new Date(post.date))}
+      <p className="mt-6 text-xs font-medium tracking-widest text-cee-red">
+        {formatDateLong(post.date)}
       </p>
       <h1 className="mt-2 text-3xl sm:text-4xl">{post.title}</h1>
 

@@ -1732,6 +1732,48 @@ El doc marcaba esta tarea como bloqueada por falta del SVG oficial de la UNI. Si
 
 ---
 
+### ✅ Iniciativa C — Sección y cards de Blog (Cambio 3)
+
+**Estado:** Completada
+**Fecha:** 2026-06-25
+
+#### Objetivo
+El Blog ya funcionaba (tipo, service, hook, páginas, listado en Home — ver Fase 8); esta iniciativa es la pasada de *pulido visual* que pedía el documento de mejoras: fondo distinto del blanco, cards uniformes con sombra y borde guinda, fecha estandarizada en mayúsculas, fallback real ante imágenes rotas, y los tokens de fondo base (`surface-cream`/`surface-grey`) que habían quedado pendientes desde la Iniciativa A.
+
+#### Decisión: `surface-grey`/`surface-cream` como tokens de Tailwind, no clases sueltas
+Se agregaron a `tailwind.config.ts` (`cee.surface.grey` / `cee.surface.cream`) en vez de hardcodear el HEX en cada sección — mismo criterio que la rampa `cee.red`. `surface-cream` no se usa todavía (lo necesitará la Iniciativa E, Contacto/Footer) pero se definió ahora para no repetir esta misma discusión de tokens dos veces.
+
+#### Decisión: patrón de puntos vía CSS puro (`radial-gradient` + `background-size`), no un asset de imagen
+El doc pide explícitamente "patrón CSS sutil (no imagen pesada)". Se agregó la clase utilitaria `.bg-dot-pattern` en `index.css` (radial-gradient de `cee-red` al 8% de opacidad, grid de 22px) — cero peso adicional de red, reutilizable en cualquier sección sobre fondo claro.
+
+#### Decisión: `formatDateLong` en `lib/utils.ts`, no depender de la clase Tailwind `uppercase`
+La fecha ya se veía en mayúsculas por una clase CSS (`uppercase`) en `BlogCard`/`BlogPostPage`, pero el doc pide explícitamente un *helper de formato* (`formatDateLong`) que devuelva el string ya en mayúsculas ("11 DE MAYO DE 2026"). Esto importa más allá de lo visual: cualquier consumo que no pase por ese `<p className="uppercase">` (meta tags, exportar a PDF, lectores de pantalla que no respetan `text-transform` en todos los casos) seguía mostrando minúsculas. Se centralizó en `apps/web/src/lib/utils.ts` y se reemplazó el `Intl.DateTimeFormat` duplicado que vivía suelto en `BlogCard.tsx` y `BlogPostPage.tsx`.
+
+#### Cambios realizados
+- **`apps/web/tailwind.config.ts`:** tokens `cee.surface.{cream,grey}`
+- **`apps/web/src/index.css`:** clase `.bg-dot-pattern`
+- **`apps/web/src/lib/utils.ts`:** nuevo `formatDateLong(date)`
+- **`apps/web/src/components/blog/BlogCard.tsx`:** borde fino guinda (`border-cee-red/20`) + `shadow-sm` en reposo (antes solo `hover:shadow-md`, sin sombra base) + `hover:shadow-lg`; fallback real ante error de carga de imagen (ícono `ImageOff` de `lucide-react`, mismo patrón de `onError` que ya usaba `CourseCard`, no clases `hidden`/`flex` de Tailwind para evitar ambigüedad de especificidad — toggle por `style.display` directo); fecha vía `formatDateLong`
+- **`apps/web/src/components/blog/BlogCardSkeleton.tsx`:** mismo borde/sombra que `BlogCard` para que el estado de carga no “salte” visualmente al llegar los datos
+- **`apps/web/src/pages/blog/BlogPostPage.tsx`:** fecha vía `formatDateLong` (se quitó el `Intl.DateTimeFormat` duplicado)
+- **`apps/web/src/pages/home/HomePage.tsx`:** la sección `#blog` ahora tiene el fondo `bg-surface-grey bg-dot-pattern` a ancho completo (full-bleed), con el contenido (`BlogSection`) constreñido aparte en un `mx-auto max-w-7xl`
+- **`apps/web/src/pages/blog/BlogPage.tsx`:** mismo tratamiento de fondo full-bleed que la sección de Home, para que `/blog` y el bloque de Home se vean consistentes
+
+#### Archivos modificados
+- ✅ `apps/web/tailwind.config.ts`, `apps/web/src/index.css`, `apps/web/src/lib/utils.ts`
+- ✅ `apps/web/src/components/blog/BlogCard.tsx`, `BlogCardSkeleton.tsx`
+- ✅ `apps/web/src/pages/blog/BlogPostPage.tsx`, `BlogPage.tsx`
+- ✅ `apps/web/src/pages/home/HomePage.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ `curl` a `/` y `/blog` responde `200`
+- ✅ Las 4 entradas del mock (`mocks/data/blog.mock.ts`) ya tenían imagen y contenido reales desde la Fase 8 — no había ningún placeholder roto que arreglar en los datos, solo faltaba el fallback defensivo en el componente
+- ✅ Altura uniforme de las cards ya la daba el CSS grid (`align-items: stretch` por defecto) + `line-clamp-3` + `mt-auto` en el CTA, sin cambios necesarios ahí
+- ⚠️ Sin `chromium-cli`/Playwright en este entorno; se recomienda verificación visual manual en navegador
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones

@@ -186,9 +186,11 @@ export default function HomePage() {
       <section
         id="blog"
         ref={blogSectionRef}
-        className="mx-auto max-w-7xl px-4 py-16 pb-24 sm:px-6 sm:py-20 sm:pb-24 lg:px-8"
+        className="bg-dot-pattern bg-surface-grey py-16 pb-24 sm:py-20 sm:pb-24"
       >
-        <BlogSection />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <BlogSection />
+        </div>
       </section>
     </div>
   );

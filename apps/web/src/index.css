@@ -136,3 +136,10 @@
 .snap-container {
   scroll-padding-top: 4rem;
 }
+
+/* Patrón sutil de puntos (CSS puro, sin imagen pesada) para secciones sobre
+   fondo surface-grey/surface-cream — Iniciativas C y E del plan de mejoras. */
+.bg-dot-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(104, 34, 34, 0.08) 1px, transparent 0);
+  background-size: 22px 22px;
+}

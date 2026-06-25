@@ -3,7 +3,7 @@ export function BlogCardSkeleton() {
   return (
     <article
       aria-hidden="true"
-      className="flex flex-col overflow-hidden rounded-lg border border-border bg-card"
+      className="flex flex-col overflow-hidden rounded-lg border border-cee-red/20 bg-card shadow-sm"
     >
       <div className="aspect-[16/9] w-full animate-pulse bg-secondary" />
       <div className="flex flex-1 flex-col gap-2 p-5">
