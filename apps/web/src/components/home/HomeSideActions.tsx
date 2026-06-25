@@ -69,12 +69,14 @@ const MOBILE_BUTTON_CLASS =
   'flex flex-col items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-medium text-white/85 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 /** Acciones principales de la Home a los costados (Tarea 10): columna fija en desktop, barra inferior en móvil. */
-export function HomeSideActions() {
+export function HomeSideActions({ hidden }: { hidden?: boolean }) {
   return (
     <>
       <nav
         aria-label="Acciones principales"
-        className="home-side-actions fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 transition-opacity duration-300 lg:flex"
+        className={`home-side-actions fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 transition-opacity duration-300 lg:flex ${
+          hidden ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
       >
         {ACTIONS.map((action) => (
           <span key={action.label} className="group relative">
@@ -90,7 +92,9 @@ export function HomeSideActions() {
 
       <nav
         aria-label="Acciones principales"
-        className="home-side-actions-mobile fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-white/10 bg-cee-ink/90 px-2 py-2 backdrop-blur-sm transition-opacity duration-300 lg:hidden"
+        className={`home-side-actions-mobile fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-white/10 bg-cee-ink/90 px-2 py-2 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+          hidden ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
       >
         {ACTIONS.map((action) => (
           <ActionLink key={action.label} action={action} className={MOBILE_BUTTON_CLASS}>

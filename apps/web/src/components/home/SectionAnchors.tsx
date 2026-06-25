@@ -7,15 +7,18 @@ interface SectionAnchor {
 
 interface SectionAnchorsProps {
   sections: SectionAnchor[];
+  hidden?: boolean;
 }
 
-export function SectionAnchors({ sections }: SectionAnchorsProps) {
+export function SectionAnchors({ sections, hidden }: SectionAnchorsProps) {
   const activeId = useActiveSection(sections.map((s) => s.id));
 
   return (
     <nav
       aria-label="Navegación de secciones"
-      className="section-anchors fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 transition-opacity duration-300 lg:flex"
+      className={`section-anchors fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 transition-opacity duration-300 lg:flex ${
+        hidden ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
     >
       {sections.map((section) => {
         const isActive = section.id === activeId;

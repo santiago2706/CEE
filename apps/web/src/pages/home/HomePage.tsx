@@ -16,6 +16,7 @@ import { ROUTES } from '@/constants/routes';
 import { useCourses } from '@/hooks/useCourses';
 import { useEvents } from '@/hooks/useEvents';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { useActiveSection } from '@/hooks/useActiveSection';
 
 function getFeaturedCourse<T extends { status: string; startDate: string }>(
   courses: T[],
@@ -47,6 +48,9 @@ export default function HomePage() {
   const nosotrosSectionRef = useScrollReveal<HTMLDivElement>();
   const blogSectionRef = useScrollReveal<HTMLDivElement>({ selector: ':scope > *' });
 
+  const activeSection = useActiveSection(SECTION_ANCHORS.map((s) => s.id));
+  const sideNavHidden = activeSection === 'hero';
+
   useEffect(() => {
     if (!heroRef.current) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -62,36 +66,13 @@ export default function HomePage() {
     };
   }, []);
 
-  const heroSectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.intersectionRatio > 0.2) {
-          document.body.classList.add('hero-visible');
-        } else {
-          document.body.classList.remove('hero-visible');
-        }
-      },
-      { threshold: [0.2] }
-    );
-
-    if (heroSectionRef.current) observer.observe(heroSectionRef.current);
-    
-    return () => {
-      observer.disconnect();
-      document.body.classList.remove('hero-visible');
-    };
-  }, []);
-
   return (
     <div className="snap-container">
-      <SectionAnchors sections={SECTION_ANCHORS} />
-      <HomeSideActions />
+      <SectionAnchors sections={SECTION_ANCHORS} hidden={sideNavHidden} />
+      <HomeSideActions hidden={sideNavHidden} />
 
       <section
         id="hero"
-        ref={heroSectionRef}
         className="relative flex min-h-[85vh] items-center overflow-hidden bg-gradient-to-br from-cee-red-900 via-cee-red-700 to-cee-ink text-white sm:min-h-screen snap-always snap-start"
       >
         <div

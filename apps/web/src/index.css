@@ -138,10 +138,7 @@ html:has(.snap-container) {
 
 body.footer-visible .home-side-actions,
 body.footer-visible .home-side-actions-mobile,
-body.footer-visible .section-anchors,
-body.hero-visible .home-side-actions,
-body.hero-visible .home-side-actions-mobile,
-body.hero-visible .section-anchors {
+body.footer-visible .section-anchors {
   opacity: 0;
   pointer-events: none;
 }
