@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/useToast';
 import { authService } from '@/services/auth.service';
 import { cn } from '@/lib/utils';
 import logoMark from '@/assets/icons/logo2.svg';
+import uniLogo from '@/assets/icons/uni-logo.png';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,8 +27,14 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to={ROUTES.HOME} className="flex items-center gap-2">
+        <Link to={ROUTES.HOME} className="flex items-center gap-3">
           <img src={logoMark} alt="CEE-FIIS" className="h-10 w-auto" />
+          <span className="hidden h-8 w-px bg-border sm:block" aria-hidden="true" />
+          <img
+            src={uniLogo}
+            alt="Universidad Nacional de Ingeniería"
+            className="hidden h-8 w-auto object-contain sm:block"
+          />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">

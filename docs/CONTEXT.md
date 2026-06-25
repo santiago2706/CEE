@@ -75,7 +75,7 @@ Responsabilidad clave: `config/navigation.ts` es la **lista única** de links de
 # Componentes Clave
 
 - **`Layout`** — compone Navbar + `<main><Outlet/></main>` + Footer; cascarón de todas las páginas públicas.
-- **`Navbar`** — logo rojo, links desktop (desde `navigation.ts`), botón de sesión (`authStore`), sticky.
+- **`Navbar`** — doble logo (CEE en SVG + UNI en PNG, separador vertical), links desktop (desde `navigation.ts`), botón de sesión (`authStore`), sticky. El logo de la UNI se oculta en mobile (solo el del CEE).
 - **`MobileMenu`** — menú hamburguesa responsive (shadcn `Sheet`); mismos links que Navbar.
 - **`Footer`** — navegación, contacto, redes, copyright dinámico (`new Date().getFullYear()`).
 - **`CourseCard`** — tarjeta de curso (precio tachado + CTA "Inscribirme", sin carrito).
@@ -163,7 +163,7 @@ Decisiones abiertas a cerrar (orden de urgencia):
 
 Trabajo preparado para fases futuras (aún mock/stub): capa mock de services, `authStore` (lógica real ya migrada a Supabase, ver Fase 6), flujo JWT completo, SEO/meta tags y accesibilidad (Fase 7).
 
-**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca ya viven en `cee.red.{50..900}` (Tailwind), Iniciativa A (Hero) ✅, Blog (Iniciativa C) ✅ — pendientes B (navbar doble logo), D (Testimonios), E (Contacto/Footer), F (Profesores) y G (WhatsApp flotante).
+**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca ya viven en `cee.red.{50..900}` (Tailwind), Iniciativa A (Hero) ✅, Blog (Iniciativa C) ✅, Iniciativa B (Navbar doble logo) ✅ parcial (logo UNI en PNG, pendiente SVG oficial) — pendientes D (Testimonios), E (Contacto/Footer), F (Profesores) y G (WhatsApp flotante).
 
 ---
 

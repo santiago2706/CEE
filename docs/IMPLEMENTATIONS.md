@@ -1695,8 +1695,40 @@ El badge "Próximo a iniciar" + cuenta regresiva vivía como un `<div>` ad-hoc i
 
 #### Pendiente del plan de mejoras (no parte de esta tarea)
 - Tokens de marca (sección 1 del doc): ya cubiertos en espíritu por la rampa `cee.red.{50..900}` existente en `tailwind.config.ts`; falta definir `surface-cream`/`surface-grey` para las Iniciativas C/E
-- Iniciativa B (Navbar doble logo) — bloqueada parcialmente por O3 (falta SVG oficial del logo de la universidad)
 - Iniciativa D (Multimedia → "Testimonios"), E (Contacto + Footer crema), F (Profesores), G (WhatsApp flotante) — no iniciadas
+
+---
+
+### ✅ Iniciativa B — Navbar con doble logo (Cambio 2, parcial)
+
+**Estado:** Completada (parcial — ver nota sobre O3)
+**Fecha:** 2026-06-25
+
+#### Objetivo
+Mostrar el logo del CEE junto al de la universidad en el Navbar, con separador vertical, mantener los links definitivos y el botón de sesión.
+
+#### Decisión: O2 (lista de links) ya estaba cerrada — no había nada que decidir
+El documento de mejoras pedía confirmar la lista final de links del navbar (Inicio · Nosotros · Programas · Blog · Multimedia · Contacto) como bloqueo O2. Al revisar `config/navigation.ts`, la lista ya coincidía exactamente con la pedida (quedó así desde la Fase 8, al agregar Blog). No se tocó.
+
+#### Decisión: O3 (logo de la universidad) se resuelve con el PNG ya existente en el repo, no con un placeholder
+El doc marcaba esta tarea como bloqueada por falta del SVG oficial de la UNI. Sin embargo, `apps/web/src/assets/icons/uni-logo.png` ya existe en el repo (usado en `InstitutionalLogos.tsx`). Se decidió usar ese PNG ya disponible en vez de dejar un slot vacío con placeholder — visualmente resuelve la tarea ya, aunque lo ideal a futuro sea reemplazarlo por un SVG vectorial cuando el CEE lo entregue (mismo placeholder/aviso que ya existe en `InstitutionalLogos.tsx`).
+- **No se implementó** la pestaña "Profesores" ni el rediseño del área derecha de sesión (eso es la Iniciativa F, fuera de alcance de esta tarea — evitar UI a medio terminar)
+- **No se mantuvo** la mención del doc a "badge de carrito (`cartStore`)": el carrito no existe en este proyecto desde la Fase 2 (decisión de alcance ya documentada); esa parte del documento de mejoras está desalineada con decisiones de producto ya tomadas y se ignoró a propósito
+
+#### Cambios realizados
+- **`apps/web/src/components/layout/Navbar.tsx`:** logo del CEE (SVG, ya existía) + separador vertical (`bg-border`) + logo de la UNI (PNG), ambos a la izquierda; el logo de la UNI y el separador se ocultan en mobile (`hidden sm:block`) — el `MobileMenu` (Sheet) ya mostraba solo el logo del CEE, sin cambios ahí
+
+#### Archivos modificados
+- ✅ `apps/web/src/components/layout/Navbar.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ `curl` a `/` responde `200`
+- ✅ No se editó ningún archivo de `components/ui/`
+
+#### Pendiente
+- Reemplazar `uni-logo.png` por un SVG vectorial oficial cuando el CEE lo entregue (mejora de nitidez, no bloqueante)
+- Iniciativa F (Profesores) queda pendiente como tarea propia; reserva de espacio en el área derecha del Navbar se hará junto con esa tarea, no antes
 
 ---
 
