@@ -1,13 +1,11 @@
-@import '@fontsource/inter/300.css';
-@import '@fontsource/inter/400.css';
-@import '@fontsource/inter/500.css';
-@import '@fontsource/inter/600.css';
-@import '@fontsource/inter/700.css';
-@import '@fontsource/fraunces/500.css';
-@import '@fontsource/fraunces/600.css';
-@import '@fontsource/fraunces/700.css';
-@import '@fontsource/poppins/600.css';
-@import '@fontsource/poppins/700.css';
+@import "@fontsource/inter/300.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/poppins/800.css";
 
 @tailwind base;
 @tailwind components;
@@ -21,7 +19,7 @@
     --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
-    --primary: 0 43% 27%;
+    --primary: 0 51% 27%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 95%;
     --secondary-foreground: 0 0% 10%;
@@ -33,7 +31,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 0 43% 27%;
+    --ring: 0 51% 27%;
 
     --r-sm: 4px;
     --r-md: 6px;
@@ -41,7 +39,8 @@
     --r-xl: 10px;
     --radius: var(--r-md);
 
-    --shadow-sm: 0 1px 2px rgba(40, 20, 20, 0.06), 0 2px 6px rgba(40, 20, 20, 0.04);
+    --shadow-sm:
+      0 1px 2px rgba(40, 20, 20, 0.06), 0 2px 6px rgba(40, 20, 20, 0.04);
     --shadow-md: 0 4px 12px rgba(40, 20, 20, 0.08);
     --shadow-lg: 0 12px 32px rgba(40, 20, 20, 0.12);
   }
@@ -72,27 +71,56 @@
     @apply border-border;
   }
 
+  html {
+    font-size: clamp(16px, 15.5px + 0.2vw, 18px);
+  }
+
   body {
     @apply bg-background text-foreground antialiased font-sans;
   }
 
   h1 {
     @apply font-display;
-    font-size: clamp(2.2rem, 4vw, 3.1rem);
-    font-weight: 600;
+    font-size: clamp(2.5rem, 2.05rem + 2.25vw, 3.55rem);
+    line-height: 1.1;
+    font-weight: 800;
     letter-spacing: -0.02em;
   }
 
   h2 {
     @apply font-display;
-    font-size: 2rem;
-    font-weight: 600;
+    font-size: clamp(2rem, 1.75rem + 1.25vw, 2.4rem);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.015em;
   }
 
   h3 {
     @apply font-display;
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: clamp(1.35rem, 1.25rem + 0.5vw, 1.5rem);
+    line-height: 1.3;
+    font-weight: 800;
+  }
+
+  h4 {
+    @apply font-display;
+    font-size: clamp(1.2rem, 1.12rem + 0.4vw, 1.3rem);
+    line-height: 1.4;
+    font-weight: 800;
+  }
+
+  h5 {
+    @apply font-display;
+    font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.125rem);
+    line-height: 1.5;
+    font-weight: 800;
+  }
+
+  h6 {
+    @apply font-display;
+    font-size: clamp(0.9rem, 0.86rem + 0.2vw, 0.97rem);
+    line-height: 1.5;
+    font-weight: 800;
   }
 
   body,
@@ -102,7 +130,7 @@
 }
 
 .logo-wordmark {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 /* ══════════════════════════════════════
@@ -111,131 +139,293 @@
 
 /* ── Ceci SVG globals ── */
 .ceci-avatar-svg {
-  width: 100%; height: 100%;
-  filter: drop-shadow(0 4px 6px rgba(123,30,46,0.3)) drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 6px rgba(123, 30, 46, 0.3))
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
   overflow: visible;
 }
-.cee-hero-svg { width: 100%; height: 100%; overflow: visible; }
+.cee-hero-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
 
 /* ── Float ── */
-.cee-hero-float { animation: ceeHeroFloat 3.2s ease-in-out infinite; transform-origin: center; }
-.ceci-float { animation: ceeHeroFloat 3.2s ease-in-out infinite; }
+.cee-hero-float {
+  animation: ceeHeroFloat 3.2s ease-in-out infinite;
+  transform-origin: center;
+}
+.ceci-float {
+  animation: ceeHeroFloat 3.2s ease-in-out infinite;
+}
 @keyframes ceeHeroFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* ── Shadow ── */
-.cee-hero-shadow { animation: ceeHeroShadow 3.2s ease-in-out infinite; }
+.cee-hero-shadow {
+  animation: ceeHeroShadow 3.2s ease-in-out infinite;
+}
 @keyframes ceeHeroShadow {
-  0%, 100% { transform: scaleX(1); opacity: 0.20; transform-box: fill-box; transform-origin: center; }
-  50%      { transform: scaleX(0.86); opacity: 0.12; transform-box: fill-box; transform-origin: center; }
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.2;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  50% {
+    transform: scaleX(0.86);
+    opacity: 0.12;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
 }
 
 /* ── Ojos: parpadeo ── */
-.cee-eye-l, .cee-eye-r { animation: ceeBlink 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.cee-eye-r { animation-delay: 0.08s; }
-@keyframes ceeBlink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  96%           { transform: scaleY(0.08); }
+.cee-eye-l,
+.cee-eye-r {
+  animation: ceeBlink 4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
 }
-.cee-eye-shine { animation: ceeShine 3s ease-in-out infinite; }
+.cee-eye-r {
+  animation-delay: 0.08s;
+}
+@keyframes ceeBlink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.08);
+  }
+}
+.cee-eye-shine {
+  animation: ceeShine 3s ease-in-out infinite;
+}
 @keyframes ceeShine {
-  0%, 100% { opacity: 0.9; }
-  50%      { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* ── Antena ── */
-.cee-antenna { animation: ceeAntenna 2.5s ease-in-out infinite; transform-origin: center; }
-@keyframes ceeAntenna {
-  0%, 100% { transform: rotate(-4deg); }
-  50%      { transform: rotate(4deg); }
+.cee-antenna {
+  animation: ceeAntenna 2.5s ease-in-out infinite;
+  transform-origin: center;
 }
-.cee-antenna-dot { animation: ceeAntennaDot 2.5s ease-in-out infinite; }
+@keyframes ceeAntenna {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+.cee-antenna-dot {
+  animation: ceeAntennaDot 2.5s ease-in-out infinite;
+}
 @keyframes ceeAntennaDot {
-  0%, 100% { opacity: 1; r: 2.5; }
-  50%      { opacity: 0.6; r: 3.5; }
+  0%,
+  100% {
+    opacity: 1;
+    r: 2.5;
+  }
+  50% {
+    opacity: 0.6;
+    r: 3.5;
+  }
 }
 
 /* ── Sonrisa ── */
-.cee-mouth { transform-origin: center; animation: ceeMouth 4s ease-in-out infinite; }
+.cee-mouth {
+  transform-origin: center;
+  animation: ceeMouth 4s ease-in-out infinite;
+}
 @keyframes ceeMouth {
-  0%, 80%, 100% { transform: scaleY(1); }
-  40%           { transform: scaleY(1.25); }
+  0%,
+  80%,
+  100% {
+    transform: scaleY(1);
+  }
+  40% {
+    transform: scaleY(1.25);
+  }
 }
 
 /* ── Mejillas rubor ── */
-.cee-cheek { animation: ceeCheek 3s ease-in-out infinite; }
+.cee-cheek {
+  animation: ceeCheek 3s ease-in-out infinite;
+}
 @keyframes ceeCheek {
-  0%, 100% { opacity: 0.4; }
-  50%      { opacity: 0.65; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.65;
+  }
 }
 
 /* ── Brazo saludando (hero) ── */
-.cee-hero-wave { animation: ceeWave 1.6s ease-in-out infinite; }
+.cee-hero-wave {
+  animation: ceeWave 1.6s ease-in-out infinite;
+}
 @keyframes ceeWave {
-  0%, 100% { transform: rotate(0deg); }
-  25%      { transform: rotate(16deg); }
-  50%      { transform: rotate(-4deg); }
-  75%      { transform: rotate(16deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(16deg);
+  }
+  50% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(16deg);
+  }
 }
 
 /* ── Hero entrada ── */
 @keyframes ceeHeroIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.92); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
-.animate-ceci-hero-in { animation: ceeHeroIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+.animate-ceci-hero-in {
+  animation: ceeHeroIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
 
 /* ── Mensaje entrada ── */
 @keyframes ceeFadeIn {
-  from { opacity: 0; transform: translateY(8px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
-.animate-ceci-message-in { animation: ceeFadeIn 0.18s cubic-bezier(0.34,1.36,0.64,1); }
+.animate-ceci-message-in {
+  animation: ceeFadeIn 0.18s cubic-bezier(0.34, 1.36, 0.64, 1);
+}
 
 /* ── Panel entrada ── */
 @keyframes ceePanelIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
-.animate-ceci-panel-in { animation: ceePanelIn 0.25s cubic-bezier(0.34,1.36,0.64,1); }
+.animate-ceci-panel-in {
+  animation: ceePanelIn 0.25s cubic-bezier(0.34, 1.36, 0.64, 1);
+}
 
 /* ── Typing dots ── */
 @keyframes ceeDotBounce {
-  0%, 80%, 100% { transform: translateY(0); background: #8a6a70; }
-  40%           { transform: translateY(-6px); background: #C9972C; }
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    background: #8a6a70;
+  }
+  40% {
+    transform: translateY(-6px);
+    background: #c9972c;
+  }
 }
-.animate-ceci-dot-bounce { animation: ceeDotBounce 1.2s infinite ease-in-out; }
+.animate-ceci-dot-bounce {
+  animation: ceeDotBounce 1.2s infinite ease-in-out;
+}
 
 /* ── Online dot ── */
 @keyframes ceeOnline {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(74,222,128,0.3); }
-  50%      { box-shadow: 0 0 0 5px rgba(74,222,128,0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(74, 222, 128, 0);
+  }
 }
-.animate-ceci-online { animation: ceeOnline 2s ease-in-out infinite; }
+.animate-ceci-online {
+  animation: ceeOnline 2s ease-in-out infinite;
+}
 
 /* ── WhatsApp pulse ── */
 @keyframes ceeWhatsappPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6); }
-  50%      { box-shadow: 0 0 0 14px rgba(37, 211, 102, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
+  }
 }
-.animate-ceci-wa-pulse { animation: ceeWhatsappPulse 1.8s ease-in-out infinite; }
+.animate-ceci-wa-pulse {
+  animation: ceeWhatsappPulse 1.8s ease-in-out infinite;
+}
 
 /* ── FAB entry ── */
 @keyframes ceeFabEntry {
-  from { transform: translateY(80px) scale(0.7); opacity: 0; }
-  to   { transform: translateY(0) scale(1); opacity: 1; }
+  from {
+    transform: translateY(80px) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
-.animate-ceci-fab-entry { animation: ceeFabEntry 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+.animate-ceci-fab-entry {
+  animation: ceeFabEntry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
 
 /* ── prefers-reduced-motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .cee-hero-float, .ceci-float, .cee-hero-shadow, .cee-eye-l, .cee-eye-r,
-  .cee-eye-shine, .cee-antenna, .cee-antenna-dot, .cee-mouth, .cee-cheek,
-  .cee-hero-wave, .animate-ceci-message-in, .animate-ceci-panel-in,
-  .animate-ceci-dot-bounce, .animate-ceci-online, .animate-ceci-wa-pulse,
-  .animate-ceci-fab-entry, .animate-ceci-hero-in {
+  .cee-hero-float,
+  .ceci-float,
+  .cee-hero-shadow,
+  .cee-eye-l,
+  .cee-eye-r,
+  .cee-eye-shine,
+  .cee-antenna,
+  .cee-antenna-dot,
+  .cee-mouth,
+  .cee-cheek,
+  .cee-hero-wave,
+  .animate-ceci-message-in,
+  .animate-ceci-panel-in,
+  .animate-ceci-dot-bounce,
+  .animate-ceci-online,
+  .animate-ceci-wa-pulse,
+  .animate-ceci-fab-entry,
+  .animate-ceci-hero-in {
     animation: none !important;
     transition: none !important;
   }
@@ -243,16 +433,24 @@
 
 /* ── Clay shadows ── */
 .shadow-clay-bubble {
-  box-shadow: 0 3px 0 rgba(123,30,46,0.1), 0 4px 12px rgba(123,30,46,0.07);
+  box-shadow:
+    0 3px 0 rgba(123, 30, 46, 0.1),
+    0 4px 12px rgba(123, 30, 46, 0.07);
 }
 .shadow-clay-card {
-  box-shadow: 0 3px 0 var(--color-cee-primary-dark, #5a1520), 0 4px 12px rgba(123,30,46,0.1);
+  box-shadow:
+    0 3px 0 var(--color-cee-primary-dark, #5a1520),
+    0 4px 12px rgba(123, 30, 46, 0.1);
 }
 .shadow-clay-panel {
-  box-shadow: 0 6px 0 var(--color-cee-primary-dark, #5a1520), 0 16px 40px rgba(123,30,46,0.18);
+  box-shadow:
+    0 6px 0 var(--color-cee-primary-dark, #5a1520),
+    0 16px 40px rgba(123, 30, 46, 0.18);
 }
 .shadow-clay-fab {
-  box-shadow: 0 6px 0 rgba(123,30,46,0.25), 0 12px 28px rgba(123,30,46,0.15);
+  box-shadow:
+    0 6px 0 rgba(123, 30, 46, 0.25),
+    0 12px 28px rgba(123, 30, 46, 0.15);
 }
 
 /* ── Chat panel mobile ── */
@@ -283,18 +481,45 @@
 }
 
 /* ── Custom scrollbar ── */
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(123,30,46,0.15); border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(123,30,46,0.25); }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(123, 30, 46, 0.15);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 30, 46, 0.25);
+}
 
 /* ── Links in chat ── */
-.chat-message-content a { color: #C9972C; text-decoration: underline; text-underline-offset: 2px; }
-.chat-message-content a:hover { color: #a87f1d; }
-.chat-message-content strong { font-weight: 700; }
-.chat-message-content em { font-style: italic; }
+.chat-message-content a {
+  color: #c9972c;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.chat-message-content a:hover {
+  color: #a87f1d;
+}
+.chat-message-content strong {
+  font-weight: 700;
+}
+.chat-message-content em {
+  font-style: italic;
+}
 
 /* ── Scrollbar hidden but scrollable (for cards) ── */
-.scrollbar-none::-webkit-scrollbar { height: 4px; }
-.scrollbar-none::-webkit-scrollbar-thumb { background: #e8d5d8; border-radius: 4px; }
-.scrollbar-none { scrollbar-width: thin; scrollbar-color: #e8d5d8 transparent; }
+.scrollbar-none::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollbar-none::-webkit-scrollbar-thumb {
+  background: #e8d5d8;
+  border-radius: 4px;
+}
+.scrollbar-none {
+  scrollbar-width: thin;
+  scrollbar-color: #e8d5d8 transparent;
+}

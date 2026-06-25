@@ -17,6 +17,7 @@ export const navigationLinks: NavLink[] = [
   { label: 'Inicio', path: ROUTES.HOME },
   { label: 'Nosotros', path: ROUTES.ABOUT },
   { label: 'Programas', path: ROUTES.CATALOG },
+  { label: 'Blog', path: ROUTES.BLOG },
   { label: 'Multimedia', path: ROUTES.MULTIMEDIA },
   { label: 'Contacto', path: ROUTES.CONTACT },
 ];

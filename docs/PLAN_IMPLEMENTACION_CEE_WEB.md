@@ -111,9 +111,9 @@ Frentes de trabajo (asignar entre el equipo de IDI):
 
 | # | Entregable | Detalle |
 |---|-----------|---------|
-| 1 | **Home + CourseCard** | Hero, catálogo con filtro por categoría, tarjeta con precio tachado y botón "Añadir" |
+| 1 | **Home + CourseCard** | Hero, catálogo con filtro por categoría, tarjeta con precio y botón "Inscribirme" ~~botón "Añadir"~~ (sin carrito, ver Fase 4) |
 | 2 | **Catálogo** | Filtros (categoría/modalidad), búsqueda, paginación |
-| 3 | **Detalle de curso** | Breadcrumb, perfil del egresado, sílabo en acordeón, plana docente, sidebar precio + carrito + descargar sílabo |
+| 3 | **Detalle de curso** | Breadcrumb, perfil del egresado, sílabo en acordeón, plana docente, sidebar precio + "Inscribirme" ~~carrito~~ + descargar sílabo |
 | 4 | **Nosotros + Multimedia** | Sección institucional; videos con lazy load / CDN (requisito de rendimiento) |
 | 5 | **Contacto + Auth** | Formulario con validación anti-spam (`contactService`); login/register en layout split |
 
@@ -123,15 +123,17 @@ Frentes de trabajo (asignar entre el equipo de IDI):
 
 ---
 
-### Fase 4 — Carrito y flujo de conversión
-**Objetivo:** cablear el embudo de captación.
+### Fase 4 — ~~Carrito y flujo de conversión~~ → FUERA DE ALCANCE
 
-- `cartStore`: `addItem` (sin duplicados), `removeItem`, `clear`, `total()`.
-- Badge de cantidad en Navbar.
-- Drawer/página de carrito.
-- Checkout **mock**: el flujo termina en registro/contacto.
-
-> ⚠️ **Fuera de alcance:** pasarelas de pago y facturación ERP (definido en el Plan de Trabajo). No implementar pago real en esta etapa.
+> ⚠️ **Fase completa fuera de alcance** (decisión de producto, ver `docs/mejoras-finale/mejoras.md`, Tarea 3 — `refactor/remove-cart-and-purchase`). El CEE no vende por pasarela de pago dentro del sitio: la inscripción se gestiona por correo/contacto. Se descarta el concepto de carrito en su totalidad, no solo el pago.
+>
+> Lo descrito originalmente abajo **no se implementa**:
+> - ~~`cartStore`: `addItem` (sin duplicados), `removeItem`, `clear`, `total()`.~~
+> - ~~Badge de cantidad en Navbar.~~
+> - ~~Drawer/página de carrito.~~
+> - ~~Checkout mock.~~
+>
+> **Reemplazado por:** flujo de conversión directo sin carrito — CTA "Inscribirme" en `CourseCard` y `CourseSidebar` que navega a `/contacto?curso=<id>` (`buildInscripcionUrl`, ver Fase 4 real documentada en `docs/IMPLEMENTATIONS.md`), donde `useCursoSeleccionado` precarga el curso en el formulario de contacto. Precios tachados (`originalPrice`) también se quitaron de la UI pública por ir asociados a la idea de "oferta de compra".
 
 ---
 

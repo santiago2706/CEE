@@ -1,6 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-);
+// En modo mock (VITE_USE_MOCKS=true) el cliente nunca llega a usarse, pero
+// createClient exige una URL/key válidas para construirse sin lanzar error.
+// Sin este fallback, abrir la app sin credenciales reales de Supabase
+// rompe el arranque (createClient lanza antes de montar React).
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

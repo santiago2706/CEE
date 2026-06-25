@@ -25,6 +25,25 @@ export interface Instructor {
   photoUrl: string;
 }
 
+// ---------- Profesores (menú "Profesores" del Navbar + perfil completo) ----------
+
+export interface TeacherUpcomingEvent {
+  id: string;
+  title: string;
+  date: string; // ISO date
+}
+
+/**
+ * Superset de `Instructor` con los campos que necesita el perfil público del
+ * docente (slug + próximos eventos/clases). Estructuralmente compatible con
+ * `Instructor`, por lo que se reutiliza `TeacherCard` (Detalle de curso) tal cual.
+ * //TODO(backend): confirmar contrato — campos `slug`/`upcomingEvents` (O4, plan de mejoras).
+ */
+export interface Teacher extends Instructor {
+  slug: string;
+  upcomingEvents: TeacherUpcomingEvent[];
+}
+
 // ---------- Sílabo ----------
 
 export interface SyllabusModule {
@@ -47,6 +66,7 @@ export interface Course {
   price: number;
   originalPrice: number | null;
   imageUrl: string;
+  startDate: string; // ISO date, fecha de inicio del curso, ej. "2026-07-15"
   academicHours: number;
   certification: string;
   rating: number;
@@ -95,6 +115,29 @@ export interface Sale {
   amount: number;
   date: string; // ISO datetime, ej. "2024-10-24T14:30:00Z"
   status: 'completed' | 'pending' | 'refunded';
+}
+
+// ---------- Blog ----------
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  imageUrl: string;
+  date: string; // ISO date, ej. "2026-06-10"
+  slug: string;
+}
+
+// ---------- Eventos (Home slider) ----------
+
+export interface EventSlide {
+  id: string;
+  title: string;
+  date: string; // ISO date, ej. "2026-08-15"
+  imageUrl: string;
+  ctaLabel: string;
+  ctaHref: string;
 }
 
 // ---------- Media / Videos ----------
@@ -182,4 +225,37 @@ export interface Paginated<T> {
   page: number;
   pageSize: number;
   total: number;
+}
+
+// ---------- Dashboard Metrics (nuevo dashboard) ----------
+
+export interface DashboardKpis {
+  totalRevenue: number;
+  revenueDeltaPct: number;
+  publishedCourses: number;
+  publishedCoursesDeltaPct: number;
+  contactLeads: number;
+  leadsDeltaPct: number;
+  completedSales: number;
+  salesDeltaPct: number;
+}
+
+export interface DashboardCategoryPoint {
+  category: string;
+  count: number;
+}
+
+export interface DashboardSaleItem {
+  id: string;
+  courseName: string;
+  amount: number;
+  status: 'completed' | 'pending' | 'refunded';
+  date: string;
+}
+
+export interface DashboardMetrics {
+  kpis: DashboardKpis;
+  monthlyRevenue: SalesTrendPoint[];
+  coursesByCategory: DashboardCategoryPoint[];
+  recentSales: DashboardSaleItem[];
 }

@@ -1,28 +1,27 @@
+import ceeLogo from '@/assets/icons/logo1.png';
+import uniLogo from '@/assets/icons/uni-logo.png';
+import ccatLogo from '@/assets/icons/ccat-logo.png';
+
 interface InstitutionalLogosProps {
-  variant?: 'mono' | 'color';
   className?: string;
 }
 
-const BACKERS = ['UNI', 'FIIS', 'CCAT'];
+const BACKERS = [
+  { name: 'UNI', src: uniLogo },
+  { name: 'CEE-FIIS', src: ceeLogo },
+  { name: 'CCAT', src: ccatLogo },
+];
 
-/**
- * Placeholder de logos de respaldo institucional (co-branding CEE+UNI).
- * Reemplazar por los SVG oficiales cuando el CEE/UNI los entregue (ver REBRANDING.md, Parte 6).
- */
-export function InstitutionalLogos({ variant = 'color', className }: InstitutionalLogosProps) {
+export function InstitutionalLogos({ className }: InstitutionalLogosProps) {
   return (
-    <div className={`flex flex-wrap items-center gap-4 sm:gap-6 ${className ?? ''}`}>
-      {BACKERS.map((name) => (
-        <span
-          key={name}
-          className={
-            variant === 'mono'
-              ? 'flex h-10 items-center rounded-md border border-white/30 px-4 text-sm font-semibold tracking-wide text-white/80'
-              : 'flex h-10 items-center rounded-md border border-border px-4 text-sm font-semibold tracking-wide text-muted-foreground'
-          }
-        >
-          {name}
-        </span>
+    <div className={`flex flex-wrap items-center gap-8 sm:gap-10 ${className ?? ''}`}>
+      {BACKERS.map((backer) => (
+        <img
+          key={backer.name}
+          src={backer.src}
+          alt={backer.name}
+          className="h-24 w-auto object-contain sm:h-28"
+        />
       ))}
     </div>
   );

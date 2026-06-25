@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { User } from '@cee/types';
 
 const TOKEN_KEY = 'cee_token';
+const PROMO_DISMISSED_KEY = 'cee_member_promo_dismissed';
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 
 /**
@@ -20,10 +21,17 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isMemberPromoDismissed: boolean;
   setAuth: (user: User, token: string, remember?: boolean) => void;
   setUser: (user: User | null) => void;
+  dismissMemberPromo: () => void;
   logout: () => void;
 }
+
+const getInitialPromoDismissed = () => {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(PROMO_DISMISSED_KEY) === 'true';
+};
 
 const getInitialMockToken = () => {
   if (!USE_MOCKS || typeof window === 'undefined') {
@@ -38,6 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: getInitialMockToken(),
   isAuthenticated: Boolean(getInitialMockToken()),
   isLoading: !USE_MOCKS,
+  isMemberPromoDismissed: getInitialPromoDismissed(),
 
   setAuth: (user, token, remember = true) => {
     window.localStorage.removeItem(TOKEN_KEY);
@@ -53,6 +62,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setUser: (user) => set({ user, token: null, isAuthenticated: Boolean(user), isLoading: false }),
+
+  dismissMemberPromo: () => {
+    window.localStorage.setItem(PROMO_DISMISSED_KEY, 'true');
+    set({ isMemberPromoDismissed: true });
+  },
 
   logout: () => {
     window.localStorage.removeItem(TOKEN_KEY);

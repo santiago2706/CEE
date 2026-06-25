@@ -29,6 +29,7 @@ interface CourseRow {
   price: number;
   original_price: number | null;
   image_url: string;
+  start_date: string;
   academic_hours: number;
   certification: string;
   rating: number;
@@ -61,6 +62,7 @@ function formatCourse(row: CourseRow): Course {
     price: Number(row.price),
     originalPrice: row.original_price != null ? Number(row.original_price) : null,
     imageUrl: row.image_url,
+    startDate: row.start_date,
     academicHours: row.academic_hours,
     certification: row.certification,
     rating: Number(row.rating),

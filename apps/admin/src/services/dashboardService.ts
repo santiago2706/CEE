@@ -1,5 +1,13 @@
-import type { ApiResponse, DashboardActivityItem, DashboardSummary } from '@cee/types';
-import { mockDashboardSummary } from '@/mocks/dashboard';
+import type {
+  ApiResponse,
+  DashboardActivityItem,
+  DashboardCategoryPoint,
+  DashboardMetrics,
+  DashboardSaleItem,
+  DashboardSummary,
+  SalesTrendPoint,
+} from '@cee/types';
+import { mockDashboardMetrics, mockDashboardSummary } from '@/mocks/dashboard';
 import { supabase } from '@/lib/supabase';
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
@@ -73,7 +81,114 @@ async function buildRecentActivity(): Promise<DashboardActivityItem[]> {
   });
 }
 
+const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as const;
+
+interface SaleRow { id: string; amount: number; status: string; created_at: string; course_name?: string | null }
+
 export const dashboardService = {
+  async getMetrics(from?: string, to?: string): Promise<ApiResponse<DashboardMetrics>> {
+    if (USE_MOCKS) return delay({ data: mockDashboardMetrics });
+
+    const now = new Date();
+    const rangeFrom = from ? new Date(from).toISOString()            : startOfMonth(now).toISOString();
+    const rangeTo   = to   ? new Date(to + 'T23:59:59').toISOString() : now.toISOString();
+
+    // Previous period for delta %
+    const duration = new Date(rangeTo).getTime() - new Date(rangeFrom).getTime();
+    const prevFrom = new Date(new Date(rangeFrom).getTime() - duration).toISOString();
+
+    // ── Parallel queries ──────────────────────────────────────────────────────
+    const [salesRes, prevSalesRes, leadsRes, prevLeadsRes, coursesRes, trendRes, recentRes] =
+      await Promise.all([
+        // Sales in range (completed)
+        supabase.from('sales').select('id, amount, status, created_at, course_name')
+          .eq('status', 'completed').gte('created_at', rangeFrom).lte('created_at', rangeTo),
+
+        // Sales in prev period (completed) — for delta
+        supabase.from('sales').select('id, amount, status, created_at')
+          .eq('status', 'completed').gte('created_at', prevFrom).lt('created_at', rangeFrom),
+
+        // Leads in range
+        supabase.from('contact_leads').select('id', { count: 'exact', head: true })
+          .gte('created_at', rangeFrom).lte('created_at', rangeTo),
+
+        // Leads in prev period
+        supabase.from('contact_leads').select('id', { count: 'exact', head: true })
+          .gte('created_at', prevFrom).lt('created_at', rangeFrom),
+
+        // Published courses (not date-filtered)
+        supabase.from('courses').select('category').eq('status', 'published'),
+
+        // Monthly revenue trend — last 6 months
+        supabase.from('sales').select('amount, created_at').eq('status', 'completed')
+          .gte('created_at', (() => { const d = new Date(); d.setMonth(d.getMonth() - 5); d.setDate(1); return d.toISOString(); })()),
+
+        // Recent 5 sales (any status, newest first)
+        supabase.from('sales').select('id, amount, status, created_at, course_name')
+          .order('created_at', { ascending: false }).limit(5),
+      ]);
+
+    const sales     = (salesRes.data     ?? []) as SaleRow[];
+    const prevSales = (prevSalesRes.data ?? []) as SaleRow[];
+
+    const totalRevenue   = sales.reduce((s, r) => s + (r.amount ?? 0), 0);
+    const prevRevenue    = prevSales.reduce((s, r) => s + (r.amount ?? 0), 0);
+    const completedSales = sales.length;
+    const prevSalesCount = prevSales.length;
+
+    const contactLeads = leadsRes.count   ?? 0;
+    const prevLeads    = prevLeadsRes.count ?? 0;
+
+    // Published courses + category breakdown
+    const publishedCourses = (coursesRes.data ?? []).length;
+    const catMap: Record<string, number> = {};
+    (coursesRes.data ?? []).forEach((c: { category: string }) => {
+      catMap[c.category] = (catMap[c.category] ?? 0) + 1;
+    });
+    const coursesByCategory: DashboardCategoryPoint[] = Object.entries(catMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([category, count]) => ({ category, count }));
+
+    // Monthly revenue trend (aggregate by month label)
+    const monthMap: Record<string, number> = {};
+    ((trendRes.data ?? []) as { amount: number; created_at: string }[]).forEach((r) => {
+      const label = MONTHS_ES[new Date(r.created_at).getMonth()];
+      monthMap[label] = (monthMap[label] ?? 0) + r.amount;
+    });
+    const monthlyRevenue: SalesTrendPoint[] = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(); d.setMonth(d.getMonth() - (5 - i));
+      const label = MONTHS_ES[d.getMonth()];
+      return { label, revenue: monthMap[label] ?? 0 };
+    });
+
+    // Recent sales for table
+    const recentSales: DashboardSaleItem[] = ((recentRes.data ?? []) as SaleRow[]).map((r) => ({
+      id: r.id,
+      courseName: r.course_name ?? 'Sin nombre',
+      amount: r.amount,
+      status: r.status as 'completed' | 'pending' | 'refunded',
+      date: r.created_at,
+    }));
+
+    return {
+      data: {
+        kpis: {
+          totalRevenue,
+          revenueDeltaPct:          pct(totalRevenue,   prevRevenue),
+          publishedCourses,
+          publishedCoursesDeltaPct: 0,
+          contactLeads,
+          leadsDeltaPct:            pct(contactLeads,   prevLeads),
+          completedSales,
+          salesDeltaPct:            pct(completedSales, prevSalesCount),
+        },
+        monthlyRevenue,
+        coursesByCategory,
+        recentSales,
+      },
+    };
+  },
+
   async getSummary(): Promise<ApiResponse<DashboardSummary>> {
     if (USE_MOCKS) {
       return delay({ data: mockDashboardSummary });

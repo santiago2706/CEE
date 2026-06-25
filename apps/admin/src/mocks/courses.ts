@@ -9,6 +9,7 @@ function buildCourse(overrides: Pick<Course, 'id' | 'slug' | 'title' | 'category
     description: '',
     originalPrice: null,
     imageUrl: '',
+    startDate: '2026-07-15',
     academicHours: 40,
     certification: 'Certificación CEE-FIIS',
     rating: 0,

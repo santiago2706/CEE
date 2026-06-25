@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import type { Course } from '@cee/types';
+import { CourseCountdown } from '@/components/shared/CourseCountdown';
 import { ROUTES } from '@/constants/routes';
 import { formatPrice } from '@/lib/utils';
 import { buildInscripcionUrl } from '@/lib/inscripcion';
@@ -47,16 +48,11 @@ export function CourseCard({ course }: CourseCardProps) {
           <span>{course.enrolledCount ?? 0} inscritos</span>
         </div>
 
+        <CourseCountdown course={course} />
+
         {/* Precio + botones — empujados al fondo de la card */}
         <div className="mt-auto flex items-center justify-between">
-          <div>
-            {course.originalPrice ? (
-              <p className="text-sm text-muted-foreground line-through">
-                {formatPrice(course.originalPrice)}
-              </p>
-            ) : null}
-            <p className="text-lg font-bold text-cee-red">{formatPrice(course.price)}</p>
-          </div>
+          <p className="text-lg font-bold text-cee-red">{formatPrice(course.price)}</p>
         </div>
 
         <div className="flex gap-2">
