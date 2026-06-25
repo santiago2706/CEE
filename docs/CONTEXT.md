@@ -64,7 +64,7 @@ Responsabilidad clave: `config/navigation.ts` es la **lista única** de links de
 # Flujo de la Aplicación
 
 - **Inicio:** `pnpm dev` levanta `apps/web` y `apps/admin` (Turborepo). Cada app monta su Router de React Router v6 con `Layout` como ruta padre que renderiza `<Outlet/>`.
-- **Navegación pública:** rutas perezosas (`lazy()` + `<Suspense>`). Secciones: **Inicio, Nosotros, Programas, Blog, Multimedia, Contacto**. Header con menú hamburguesa (mobile) e "Iniciar Sesión".
+- **Navegación pública:** rutas perezosas (`lazy()` + `<Suspense>`). Secciones: **Inicio, Nosotros, Programas, Blog, Testimonios, Contacto** (label "Testimonios" apunta a la ruta `/multimedia`, sin cambio de URL). Header con menú hamburguesa (mobile) e "Iniciar Sesión".
 - **Flujo de datos:** las pantallas piden datos a los `services`. Con `VITE_USE_MOCKS=true` devuelven fixtures locales; con `false` consumen la API real. La UI no cambia entre ambos modos.
 - **Comunicación con APIs:** vía **Axios**. En integración real (Fase 6) se usa **JWT**: login → token en `localStorage` (solo a través de `authStore`) → interceptor de request añade el token → manejo de `401` con redirect a login.
 - **Embudo de conversión:** sin carrito ni checkout (descartados en Fase 2); cada CTA "Inscribirme" navega directo a `/contacto?curso=<id>` con el curso preseleccionado. No hay pago real. El formulario de contacto valida anti-spam y notifica al correo del CEE.
@@ -163,7 +163,7 @@ Decisiones abiertas a cerrar (orden de urgencia):
 
 Trabajo preparado para fases futuras (aún mock/stub): capa mock de services, `authStore` (lógica real ya migrada a Supabase, ver Fase 6), flujo JWT completo, SEO/meta tags y accesibilidad (Fase 7).
 
-**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca en `cee.red.{50..900}` + `cee.surface.{cream,grey}` (Tailwind), Iniciativa A (Hero) ✅, B (Navbar doble logo) ✅ parcial (logo UNI en PNG, pendiente SVG oficial), C (cards de Blog pulidas) ✅ — pendientes D (Testimonios), E (Contacto/Footer), F (Profesores) y G (WhatsApp flotante).
+**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca en `cee.red.{50..900}` + `cee.surface.{cream,grey}` (Tailwind), Iniciativa A (Hero) ✅, B (Navbar doble logo) ✅ parcial (logo UNI en PNG, pendiente SVG oficial), C (cards de Blog pulidas) ✅, D ("Multimedia" → "Testimonios", misma ruta `/multimedia`) ✅ — pendientes E (Contacto/Footer), F (Profesores) y G (WhatsApp flotante).
 
 ---
 

@@ -1774,6 +1774,38 @@ La fecha ya se veía en mayúsculas por una clase CSS (`uppercase`) en `BlogCard
 
 ---
 
+### ✅ Iniciativa D — Multimedia → "Testimonios" (Cambio 4)
+
+**Estado:** Completada
+**Fecha:** 2026-06-25
+
+#### Objetivo
+Renombrar la sección "Multimedia" a "Testimonios" (título, nav, copy enfocado en egresados), enriquecer el degradado guinda y mejorar la calidad/distinción de las miniaturas de video.
+
+#### Decisión (confirmada con el usuario): la ruta sigue siendo `/multimedia`, solo cambia el nombre visible
+El doc dejaba abierta esta decisión (bloqueo O2: "decidir si la ruta queda `/multimedia` o pasa a `/testimonios`, con redirect si hace falta"). Se eligió **no** cambiar la URL: evita romper enlaces/bookmarks existentes y no requiere agregar una ruta de redirect. Por consistencia, tampoco se renombraron los archivos/carpetas (`pages/multimedia/`, `components/multimedia/`) — siguen nombrados según la ruta que sirven (`/multimedia`), no según el label visible ("Testimonios"), mismo criterio que el resto del repo (ej. `pages/blog/` sirve `/blog`).
+
+#### Decisión: lazy-load del reproductor ya estaba resuelto, no fue necesario tocar `VideoGallery.tsx`
+El doc pedía "lazy-load del iframe/poster y carga diferida del reproductor" como requisito de rendimiento. Verificado: las miniaturas (`<img>`) ya usaban `loading="lazy"`, y el `<iframe>` de YouTube solo se monta dentro del modal cuando el usuario hace click en una tarjeta (`selectedVideo` controla el render) — nunca se carga en el render inicial de la página. Ambos requisitos ya estaban cubiertos por el diseño existente; no se modificó `VideoGallery.tsx`.
+
+#### Cambios realizados
+- **`apps/web/src/config/navigation.ts`:** label `'Multimedia'` → `'Testimonios'` (mismo `path: ROUTES.MULTIMEDIA`)
+- **`apps/web/src/pages/multimedia/MultimediaPage.tsx`:** `h1` a "Testimonios"; copy nuevo enfocado en egresados; degradado enriquecido (`from-cee-red-900 via-cee-red-600 to-cee-ink` + overlay `radial-gradient` adicional para mayor riqueza tonal, sin salir de la paleta de marca)
+- **`apps/web/src/mocks/data/videos.mock.ts`:** las 6 entradas mock compartían la misma foto institucional como thumbnail (`CEE_THUMBNAIL` reutilizada 6 veces) — se reemplazó por una imagen Unsplash distinta y de mayor resolución (`w=800&q=80`) por video; títulos/descripciones reescritos con enfoque más explícito en historias de egresados (categoría `Testimonios` predominante)
+
+#### Archivos modificados
+- ✅ `apps/web/src/config/navigation.ts`
+- ✅ `apps/web/src/pages/multimedia/MultimediaPage.tsx`
+- ✅ `apps/web/src/mocks/data/videos.mock.ts`
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ `curl` a `/multimedia` responde `200`
+- ✅ Confirmado que ninguna miniatura se repite entre las 6 entradas del mock
+- ⚠️ Sin `chromium-cli`/Playwright en este entorno; se recomienda verificación visual manual en navegador
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
