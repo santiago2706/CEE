@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
-/** Observa una lista de IDs de sección y devuelve el más visible en viewport. */
+/** Devuelve el ID de la sección que ocupa más espacio visible en el viewport.
+ *  Usa un listener de `scroll` en lugar de IntersectionObserver porque
+ *  con `scroll-snap` el navegador puede saltar frames y no disparar los callbacks. */
 export function useActiveSection(sectionIds: string[]) {
   const [activeId, setActiveId] = useState(sectionIds[0] ?? '');
-  // Estabilizamos la dependencia: JSON.stringify solo cambia si los IDs cambian de verdad
+  // Referencia estable: no provoca que el effect se re-ejecute en cada render
   const key = JSON.stringify(sectionIds);
   const keyRef = useRef(key);
   keyRef.current = key;
@@ -11,28 +13,35 @@ export function useActiveSection(sectionIds: string[]) {
   useEffect(() => {
     const ids: string[] = JSON.parse(keyRef.current);
 
-    const elements = ids
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null);
+    function getMostVisible(): string | null {
+      let bestId: string | null = null;
+      let bestVisible = -1;
 
-    if (elements.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-        if (visible) {
-          setActiveId(visible.target.id);
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        // Píxeles visibles en el viewport
+        const visible =
+          Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+        if (visible > bestVisible) {
+          bestVisible = visible;
+          bestId = id;
         }
-      },
-      { threshold: [0.3, 0.5, 0.7], rootMargin: '-10% 0px -10% 0px' },
-    );
+      }
+      return bestId;
+    }
 
-    elements.forEach((el) => observer.observe(el));
+    function handleScroll() {
+      const found = getMostVisible();
+      if (found) setActiveId(found);
+    }
 
-    return () => observer.disconnect();
+    // Llamada inicial para establecer el estado correcto desde el primer render
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
