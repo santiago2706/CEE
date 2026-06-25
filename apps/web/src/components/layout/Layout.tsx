@@ -4,6 +4,7 @@ import { PageTransition } from '@/components/layout/PageTransition';
 import { Toaster } from '@/components/ui/toast';
 import { MemberPromo } from '@/components/shared/MemberPromo';
 import { WhatsAppFab } from '@/components/shared/WhatsAppFab';
+import { Chatbot } from '@/components/chatbot/Chatbot';
 
 export function Layout() {
   return (
@@ -16,6 +17,7 @@ export function Layout() {
       <Footer />
       <Toaster />
       <WhatsAppFab />
+      <Chatbot />
     </div>
   );
 }

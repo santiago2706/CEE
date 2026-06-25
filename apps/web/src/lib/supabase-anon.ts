@@ -1,0 +1,7 @@
+import { createClient } from '@supabase/supabase-js';
+
+/** Cliente Supabase sin auth — solo para consultas de catálogo público */
+export const supabasePublic = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+);

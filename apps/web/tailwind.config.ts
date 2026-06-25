@@ -74,6 +74,8 @@ const config = {
           'red-light': '#8C3A3A',
           plomo: '#A9A9A9',
           gray: '#A9A9A9',
+          gold: '#C9972C',
+          'gold-light': '#D4A840',
           ink: '#000000',
         },
         surface: {
@@ -107,10 +109,15 @@ const config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        'whatsapp-pulse': {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(37, 211, 102, 0.6)' },
+          '50%': { boxShadow: '0 0 0 14px rgba(37, 211, 102, 0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'whatsapp-pulse': 'whatsapp-pulse 1.8s ease-in-out infinite',
       },
     },
   },
