@@ -120,174 +120,175 @@ export default function ContactPage() {
   };
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold">
-          {course ? 'Inscripción' : 'Contacto'}
-        </h1>
-        <p className="mt-3 text-muted-foreground">
-          {course
-            ? 'Completa el formulario y nos pondremos en contacto contigo para finalizar tu inscripción.'
-            : '¿Tienes alguna consulta? Completa el formulario y nuestro equipo te responderá a la brevedad.'}
-        </p>
-      </div>
-
-      {/* Banner de curso preseleccionado */}
-      {isCourseLoading && (
-        <div className="mt-6 animate-pulse rounded-lg border border-border bg-muted p-4">
-          <p className="text-sm text-muted-foreground">Cargando información del curso...</p>
+    <section className="bg-surface-cream py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl">
+          <h1 className="text-3xl font-bold">
+            {course ? 'Inscripción' : 'Contacto'}
+          </h1>
+          <p className="mt-3 text-muted-foreground">
+            {course
+              ? 'Completa el formulario y nos pondremos en contacto contigo para finalizar tu inscripción.'
+              : '¿Tienes alguna consulta? Completa el formulario y nuestro equipo te responderá a la brevedad.'}
+          </p>
         </div>
-      )}
 
-      {course && !isCourseLoading && (
-        <div className="mt-6 rounded-lg border border-cee-red/20 bg-cee-red/5 p-4">
-          <div className="flex items-start gap-3">
-            <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Te estás inscribiendo a:</p>
-              <p className="mt-1 text-lg font-semibold text-foreground">{course.title}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold uppercase text-cee-red">
-                  {course.category}
-                </span>
-                <span>{course.modality}</span>
-                <span>{course.academicHours} horas</span>
-                <span className="font-semibold text-cee-red">{formatPrice(course.price)}</span>
+        {/* Banner de curso preseleccionado */}
+        {isCourseLoading && (
+          <div className="mt-6 animate-pulse rounded-lg border border-border bg-white p-4">
+            <p className="text-sm text-muted-foreground">Cargando información del curso...</p>
+          </div>
+        )}
+
+        {course && !isCourseLoading && (
+          <div className="mt-6 rounded-lg border border-cee-red/20 bg-cee-red/5 p-4">
+            <div className="flex items-start gap-3">
+              <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Te estás inscribiendo a:</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">{course.title}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold uppercase text-cee-red">
+                    {course.category}
+                  </span>
+                  <span>{course.modality}</span>
+                  <span>{course.academicHours} horas</span>
+                  <span className="font-semibold text-cee-red">{formatPrice(course.price)}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardContent className="p-6">
-            <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
-              {/* Honeypot: oculto para usuarios, visible para bots */}
-              <div className="absolute left-[-9999px] top-auto h-0 w-0 overflow-hidden" aria-hidden="true">
-                <label htmlFor="website">No completar este campo</label>
-                <input
-                  id="website"
-                  name="website"
-                  type="text"
-                  tabIndex={-1}
-                  autoComplete="off"
-                  value={values.website}
-                  onChange={handleChange('website')}
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-1.5">
-                  <Label htmlFor="name">Nombre completo</Label>
-                  <Input
-                    id="name"
-                    value={values.name}
-                    onChange={handleChange('name')}
-                    aria-invalid={Boolean(errors.name)}
+        <div className="mt-10 grid gap-8 lg:grid-cols-3">
+          <Card className="lg:col-span-2 shadow-md">
+            <CardContent className="p-6">
+              <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
+                {/* Honeypot: oculto para usuarios, visible para bots */}
+                <div className="absolute left-[-9999px] top-auto h-0 w-0 overflow-hidden" aria-hidden="true">
+                  <label htmlFor="website">No completar este campo</label>
+                  <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={values.website}
+                    onChange={handleChange('website')}
                   />
-                  {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="name">Nombre completo</Label>
+                    <Input
+                      id="name"
+                      value={values.name}
+                      onChange={handleChange('name')}
+                      aria-invalid={Boolean(errors.name)}
+                    />
+                    {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="email">Correo electrónico</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={values.email}
+                      onChange={handleChange('email')}
+                      aria-invalid={Boolean(errors.email)}
+                    />
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="phone">Teléfono (opcional)</Label>
+                    <Input id="phone" value={values.phone} onChange={handleChange('phone')} />
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="subject">Asunto</Label>
+                    <Input
+                      id="subject"
+                      value={values.subject}
+                      onChange={handleChange('subject')}
+                      aria-invalid={Boolean(errors.subject)}
+                    />
+                    {errors.subject && <p className="text-sm text-destructive">{errors.subject}</p>}
+                  </div>
                 </div>
 
                 <div className="grid gap-1.5">
-                  <Label htmlFor="email">Correo electrónico</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={values.email}
-                    onChange={handleChange('email')}
-                    aria-invalid={Boolean(errors.email)}
+                  <Label htmlFor="message">Mensaje</Label>
+                  <Textarea
+                    id="message"
+                    value={values.message}
+                    onChange={handleChange('message')}
+                    aria-invalid={Boolean(errors.message)}
                   />
-                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-1.5">
-                  <Label htmlFor="phone">Teléfono (opcional)</Label>
-                  <Input id="phone" value={values.phone} onChange={handleChange('phone')} />
+                  {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
                 </div>
 
-                <div className="grid gap-1.5">
-                  <Label htmlFor="subject">Asunto</Label>
-                  <Input
-                    id="subject"
-                    value={values.subject}
-                    onChange={handleChange('subject')}
-                    aria-invalid={Boolean(errors.subject)}
-                  />
-                  {errors.subject && <p className="text-sm text-destructive">{errors.subject}</p>}
-                </div>
-              </div>
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="message">Mensaje</Label>
-                <Textarea
-                  id="message"
-                  value={values.message}
-                  onChange={handleChange('message')}
-                  aria-invalid={Boolean(errors.message)}
-                />
-                {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
-              </div>
-
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
-                {isSubmitting
-                  ? 'Enviando...'
-                  : course
-                    ? 'Enviar solicitud de inscripción'
-                    : 'Enviar mensaje'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Información de contacto</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 text-sm">
-              <div className="flex items-start gap-3">
-                <Phone className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
-                <span>{CONTACT_INFO.phone}</span>
-              </div>
-              <a
-                href={CONTACT_INFO.whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-start gap-3 hover:text-cee-red"
-              >
-                <WhatsAppIcon className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
-                <span>WhatsApp</span>
-              </a>
-              <div className="flex items-start gap-3">
-                <Mail className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
-                <span>{CONTACT_INFO.email}</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
-                <span>{CONTACT_INFO.address}</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Clock className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
-                <span>{CONTACT_INFO.schedule}</span>
-              </div>
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
+                  {isSubmitting
+                    ? 'Enviando...'
+                    : course
+                      ? 'Enviar solicitud de inscripción'
+                      : 'Enviar mensaje'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden">
-            <iframe
-              title="Ubicación del CEE-FIIS"
-              src={CONTACT_INFO.mapsEmbedUrl}
-              className="h-64 w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </Card>
+          <div className="grid gap-6">
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle className="text-lg">Información de contacto</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <Phone className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+                  <span>{CONTACT_INFO.phone}</span>
+                </div>
+                <a
+                  href={CONTACT_INFO.whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-start gap-3 hover:text-cee-red"
+                >
+                  <WhatsAppIcon className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+                  <span>WhatsApp</span>
+                </a>
+                <div className="flex items-start gap-3">
+                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+                  <span>{CONTACT_INFO.email}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+                  <span>{CONTACT_INFO.address}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Clock className="mt-0.5 h-5 w-5 shrink-0 text-cee-red" />
+                  <span>{CONTACT_INFO.schedule}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden shadow-md">
+              <iframe
+                title="Ubicación del CEE-FIIS"
+                src={CONTACT_INFO.mapsEmbedUrl}
+                className="h-64 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </Card>
+          </div>
         </div>
       </div>
     </section>
   );
 }
-

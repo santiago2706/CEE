@@ -13,7 +13,7 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-cee-red to-cee-red-dark text-white">
+    <footer className="bg-gradient-to-b from-neutral-900 to-cee-ink text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-12 lg:px-8">
         <div className="md:col-span-4">
           <p className="logo-wordmark text-lg font-bold">Centro de Especialización Ejecutiva</p>

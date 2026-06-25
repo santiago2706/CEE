@@ -77,7 +77,8 @@ Responsabilidad clave: `config/navigation.ts` es la **lista única** de links de
 - **`Layout`** — compone Navbar + `<main><Outlet/></main>` + Footer; cascarón de todas las páginas públicas.
 - **`Navbar`** — doble logo (CEE en SVG + UNI en PNG, separador vertical), links desktop (desde `navigation.ts`), botón de sesión (`authStore`), sticky. El logo de la UNI se oculta en mobile (solo el del CEE).
 - **`MobileMenu`** — menú hamburguesa responsive (shadcn `Sheet`); mismos links que Navbar.
-- **`Footer`** — navegación, contacto, redes, copyright dinámico (`new Date().getFullYear()`).
+- **`Footer`** — fondo gris oscuro/negro (token de marca para footer, no guinda), navegación, contacto, redes, copyright dinámico (`new Date().getFullYear()`).
+- **`WhatsAppFab`** — botón flotante fijo (esquina inferior derecha, todas las páginas), link a `CONTACT_INFO.whatsappUrl`, montado en `Layout`.
 - **`CourseCard`** — tarjeta de curso (precio tachado + CTA "Inscribirme", sin carrito).
 - **Detalle de curso** — breadcrumb, perfil del egresado, sílabo en acordeón, plana docente, sidebar (precio + "Inscribirme" + descargar sílabo PDF).
 - **Home — Hero** (`pages/home/HomePage.tsx`) — bloque diagonal guinda (CSS `clip-path`, no imagen recortada) que contiene todo el texto, alineado a la izquierda y flush al borde del viewport; imagen institucional de fondo visible a través del recorte en desktop, debajo del texto en mobile. Usa **`NextStartBadge`** (`components/shared/NextStartBadge.tsx`), badge reutilizable que envuelve el `Badge` de shadcn para destacar "Próximo a iniciar" + cuenta regresiva (`CourseCountdown`).
@@ -163,7 +164,7 @@ Decisiones abiertas a cerrar (orden de urgencia):
 
 Trabajo preparado para fases futuras (aún mock/stub): capa mock de services, `authStore` (lógica real ya migrada a Supabase, ver Fase 6), flujo JWT completo, SEO/meta tags y accesibilidad (Fase 7).
 
-**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca en `cee.red.{50..900}` + `cee.surface.{cream,grey}` (Tailwind), Iniciativa A (Hero) ✅, B (Navbar doble logo) ✅ parcial (logo UNI en PNG, pendiente SVG oficial), C (cards de Blog pulidas) ✅, D (degradado y copy de "Multimedia" enriquecidos, título sin cambiar a pedido del usuario) ✅ — pendientes E (Contacto/Footer), F (Profesores) y G (WhatsApp flotante).
+**Estado actual:** Fases 0–6 completas (layout, páginas públicas, conversión sin carrito, panel admin, integración Supabase). En curso el **plan de mejoras de UI/UX** (`docs/mejoras-finale/mejoras-finales2.md`): tokens de marca en `cee.red.{50..900}` + `cee.surface.{cream,grey}` (Tailwind), Iniciativa A (Hero) ✅, B (Navbar doble logo) ✅ parcial (logo UNI en PNG, pendiente SVG oficial), C (cards de Blog pulidas) ✅, D (degradado y copy de "Multimedia" enriquecidos, título sin cambiar a pedido del usuario) ✅, E (Contacto fondo crema + Footer gris oscuro) ✅, G (WhatsApp flotante) ✅ ya estaba implementado — pendiente F (Profesores, bloqueada por O4: contrato del tipo `Teacher`).
 
 ---
 

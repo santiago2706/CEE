@@ -1809,6 +1809,51 @@ El doc pedía "lazy-load del iframe/poster y carga diferida del reproductor" com
 
 ---
 
+### ℹ️ Iniciativa G — Botón flotante de WhatsApp (Cambio transversal): ya estaba implementada
+
+**Estado:** Verificada (sin cambios — ya completa)
+**Fecha:** 2026-06-25
+
+Antes de tomar la Iniciativa E se revisó si G (más simple, sin bloqueos) ya estaba hecha. Resultado: **sí**, completa — `apps/web/src/components/shared/WhatsAppFab.tsx`, montado en `Layout.tsx`. Cumple los 3 criterios del doc: `position: fixed` esquina inferior derecha con `z-40`, link a `CONTACT_INFO.whatsappUrl` (número del CEE centralizado en `constants/contact.constants.ts`, no hardcodeado), `aria-label`, tamaño táctil de 56px (`h-14 w-14`), ícono real de WhatsApp (`WhatsAppIcon`, no un ícono genérico de `lucide-react`), y respeta `motion-reduce`. No se modificó nada.
+
+---
+
+### ✅ Iniciativa E — Formulario de Contacto + Footer (Cambio 5)
+
+**Estado:** Completada
+**Fecha:** 2026-06-25
+
+#### Objetivo
+Fondo crema en la página de Contacto (contraste con el formulario blanco), confirmar que no hay artefactos decorativos de fondo ("barra de tareas de escritorio" de la maqueta original), y cambiar el Footer a un fondo gris oscuro/negro — el formulario y sus validaciones, anti-spam y estados de carga ya existían de antes (Fase 3 frente 5) y no se tocaron.
+
+#### Decisión: el Footer pasa de degradado guinda a gris oscuro/negro, revirtiendo una decisión visual de una sesión anterior
+En una sesión anterior (fuera de este plan de mejoras) se había rediseñado el Footer con un degradado `cee-red → cee-red-dark`. El manual de marca (sección 1 del documento de mejoras) define explícitamente: *"Neutro oscuro · Negro #000000 · Uso: Texto, **footer**"* — es decir, el propio documento prescribe negro/gris oscuro para el footer, no guinda. Se cambió a `bg-gradient-to-b from-neutral-900 to-cee-ink` para cumplir esa regla de marca sin perder la profundidad visual del degradado.
+
+#### Decisión: no había "barra de tareas de Windows" que quitar — ya estaba limpio
+Esa tarea del doc describe un artefacto de la *maqueta de diseño* (imagen de referencia), no algo presente en el código real de `ContactPage.tsx`. Se verificó que la página ya no tiene ninguna imagen de fondo decorativa; nada que remover.
+
+#### Decisión: el formulario, validación, anti-spam y estados ya estaban completos — no se tocó esa lógica
+`ContactPage.tsx` ya tenía: validación manual + honeypot anti-spam, integración con `contactService` (mock/Supabase), estados de carga/éxito/error vía `useToast`, y soporte para curso preseleccionado (`?curso=<id>`, de la Fase 4). Solo se ajustó el fondo de la sección y se subió la sombra de las `Card` (`shadow-sm` → `shadow-md`) para que el formulario "resalte" más sobre el nuevo fondo crema, como pide el criterio de "Done" del doc.
+
+#### Nota sobre "asegurar que el formulario notifica al correo del CEE" (criterio de QA, Fase 7)
+Esa notificación depende de un trigger/función en el backend de Supabase (tabla `contact_leads`), no de código en `apps/web`. El frontend ya hace su parte correctamente (inserta sin pérdida de datos, valida antes de enviar, maneja errores); confirmar el envío de correo real es una verificación de infraestructura fuera del alcance de este repo de frontend.
+
+#### Cambios realizados
+- **`apps/web/src/components/layout/Footer.tsx`:** fondo `bg-gradient-to-b from-cee-red to-cee-red-dark` → `bg-gradient-to-b from-neutral-900 to-cee-ink`
+- **`apps/web/src/pages/contact/ContactPage.tsx`:** envuelto en `bg-surface-cream` (full-bleed); banner de "cargando curso" cambiado de `bg-muted` a `bg-white` (mejor contraste sobre crema); `shadow-md` explícito en las `Card` del formulario, info de contacto y mapa
+
+#### Archivos modificados
+- ✅ `apps/web/src/components/layout/Footer.tsx`
+- ✅ `apps/web/src/pages/contact/ContactPage.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ `curl` a `/contacto` responde `200`
+- ✅ No se editó ningún archivo de `components/ui/`
+- ⚠️ Sin `chromium-cli`/Playwright en este entorno; se recomienda verificación visual manual en navegador
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
