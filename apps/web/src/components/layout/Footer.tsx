@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import { BrochureDownloadButton } from '@/components/shared/BrochureDownloadButton';
@@ -12,8 +13,26 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const footerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          document.body.classList.add('footer-visible');
+        } else {
+          document.body.classList.remove('footer-visible');
+        }
+      },
+      { threshold: 0 }
+    );
+    
+    if (footerRef.current) observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <footer className="bg-gradient-to-b from-cee-red to-cee-red-dark text-white">
+    <footer ref={footerRef} className="relative z-50 bg-gradient-to-b from-cee-red to-cee-red-dark text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-12 lg:px-8">
         <div className="md:col-span-4">
           <p className="logo-wordmark text-lg font-bold">Centro de Especialización Ejecutiva</p>

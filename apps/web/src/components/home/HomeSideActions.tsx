@@ -74,7 +74,7 @@ export function HomeSideActions() {
     <>
       <nav
         aria-label="Acciones principales"
-        className="fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 lg:flex"
+        className="home-side-actions fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 transition-opacity duration-300 lg:flex"
       >
         {ACTIONS.map((action) => (
           <span key={action.label} className="group relative">
@@ -90,7 +90,7 @@ export function HomeSideActions() {
 
       <nav
         aria-label="Acciones principales"
-        className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-white/10 bg-cee-ink/90 px-2 py-2 backdrop-blur-sm lg:hidden"
+        className="home-side-actions-mobile fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-white/10 bg-cee-ink/90 px-2 py-2 backdrop-blur-sm transition-opacity duration-300 lg:hidden"
       >
         {ACTIONS.map((action) => (
           <ActionLink key={action.label} action={action} className={MOBILE_BUTTON_CLASS}>

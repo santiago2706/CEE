@@ -135,3 +135,10 @@ html:has(.snap-container) {
   scroll-snap-type: y proximity;
   scroll-padding-top: 4rem;
 }
+
+body.footer-visible .home-side-actions,
+body.footer-visible .home-side-actions-mobile,
+body.footer-visible .section-anchors {
+  opacity: 0;
+  pointer-events: none;
+}

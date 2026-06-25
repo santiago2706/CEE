@@ -15,7 +15,7 @@ export function SectionAnchors({ sections }: SectionAnchorsProps) {
   return (
     <nav
       aria-label="Navegación de secciones"
-      className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 lg:flex"
+      className="section-anchors fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 transition-opacity duration-300 lg:flex"
     >
       {sections.map((section) => {
         const isActive = section.id === activeId;
