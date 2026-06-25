@@ -1,6 +1,7 @@
 import type { AIProvider } from './types';
 import { GeminiProvider } from './gemini.provider';
 import { ClaudeProvider } from './claude.provider';
+import { GroqProvider } from './groq.provider';
 
 export type { AIProvider };
 
@@ -12,9 +13,11 @@ export function createAIProvider(): AIProvider {
       return new GeminiProvider();
     case 'claude':
       return new ClaudeProvider();
+    case 'groq':
+      return new GroqProvider();
     default:
       throw new Error(
-        `Proveedor AI desconocido: "${provider}". Valores válidos: gemini, claude`,
+        `Proveedor AI desconocido: "${provider}". Valores válidos: gemini, claude, groq`,
       );
   }
 }

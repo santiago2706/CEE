@@ -1,9 +1,21 @@
 import 'dotenv/config';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { handleMessage } from './handlers/message';
+import { createAIProvider } from './ai';
 
 const app = express();
 app.use(express.json());
+
+// CORS — permite que el panel admin llame a /api/chat desde localhost
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+app.options('*', (_req: Request, res: Response) => {
+  res.sendStatus(204);
+});
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const PORT = process.env.PORT ?? 3000;
@@ -56,6 +68,41 @@ app.post('/webhook', (req: Request, res: Response) => {
 
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'CEE Bot' });
+});
+
+// Endpoint REST para el Asistente CEE del panel admin
+let _chatProvider: ReturnType<typeof createAIProvider> | null = null;
+function getChatProvider(): ReturnType<typeof createAIProvider> {
+  if (!_chatProvider) _chatProvider = createAIProvider();
+  return _chatProvider;
+}
+
+app.post('/api/chat', (req: Request, res: Response) => {
+  const { message } = req.body as { message?: string };
+
+  if (!message?.trim()) {
+    res.status(400).json({ error: 'El campo "message" es requerido.' });
+    return;
+  }
+
+  let provider: ReturnType<typeof createAIProvider>;
+  try {
+    provider = getChatProvider();
+  } catch (err) {
+    console.error('[api/chat] Error al inicializar provider:', err);
+    res.status(500).json({ error: 'Proveedor AI no configurado correctamente.' });
+    return;
+  }
+
+  provider
+    .chat(message.trim(), '')
+    .then((reply) => {
+      res.json({ reply });
+    })
+    .catch((err: unknown) => {
+      console.error('[api/chat] Error al procesar mensaje:', err);
+      res.status(500).json({ error: 'Error al procesar la consulta.' });
+    });
 });
 
 app.listen(PORT, () => {

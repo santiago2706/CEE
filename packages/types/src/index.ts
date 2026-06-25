@@ -219,3 +219,36 @@ export interface Paginated<T> {
   pageSize: number;
   total: number;
 }
+
+// ---------- Dashboard Metrics (nuevo dashboard) ----------
+
+export interface DashboardKpis {
+  totalRevenue: number;
+  revenueDeltaPct: number;
+  publishedCourses: number;
+  publishedCoursesDeltaPct: number;
+  contactLeads: number;
+  leadsDeltaPct: number;
+  completedSales: number;
+  salesDeltaPct: number;
+}
+
+export interface DashboardCategoryPoint {
+  category: string;
+  count: number;
+}
+
+export interface DashboardSaleItem {
+  id: string;
+  courseName: string;
+  amount: number;
+  status: 'completed' | 'pending' | 'refunded';
+  date: string;
+}
+
+export interface DashboardMetrics {
+  kpis: DashboardKpis;
+  monthlyRevenue: SalesTrendPoint[];
+  coursesByCategory: DashboardCategoryPoint[];
+  recentSales: DashboardSaleItem[];
+}

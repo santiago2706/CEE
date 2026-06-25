@@ -8,7 +8,7 @@ const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const CoursesListPage = lazy(() => import('@/pages/CoursesListPage'));
 const CourseFormPage = lazy(() => import('@/pages/CourseFormPage'));
 const SalesPage = lazy(() => import('@/pages/SalesPage'));
-const BotPage = lazy(() => import('@/pages/BotPage'));
+const SecretariaChat = lazy(() => import('@/pages/SecretariaChat'));
 const AccessDeniedPage = lazy(() => import('@/pages/AccessDeniedPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 
@@ -30,7 +30,7 @@ export const router = createBrowserRouter([
           { path: '/cursos/nuevo', element: withSuspense(<CourseFormPage />) },
           { path: '/cursos/:id/editar', element: withSuspense(<CourseFormPage />) },
           { path: '/ventas', element: withSuspense(<SalesPage />) },
-          { path: '/bot', element: withSuspense(<BotPage />) },
+          { path: '/asistente', element: withSuspense(<SecretariaChat />) },
         ],
       },
     ],
