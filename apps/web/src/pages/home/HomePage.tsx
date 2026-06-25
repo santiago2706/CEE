@@ -62,6 +62,28 @@ export default function HomePage() {
     };
   }, []);
 
+  const heroSectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          document.body.classList.add('hero-visible');
+        } else {
+          document.body.classList.remove('hero-visible');
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (heroSectionRef.current) observer.observe(heroSectionRef.current);
+    
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove('hero-visible');
+    };
+  }, []);
+
   return (
     <div className="snap-container">
       <SectionAnchors sections={SECTION_ANCHORS} />
@@ -69,6 +91,7 @@ export default function HomePage() {
 
       <section
         id="hero"
+        ref={heroSectionRef}
         className="relative flex min-h-[85vh] items-center overflow-hidden bg-gradient-to-br from-cee-red-900 via-cee-red-700 to-cee-ink text-white sm:min-h-screen snap-always snap-start"
       >
         <div
