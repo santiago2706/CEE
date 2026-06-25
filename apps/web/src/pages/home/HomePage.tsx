@@ -36,6 +36,9 @@ const SECTION_ANCHORS = [
   { id: 'blog', label: 'Blog' },
 ];
 
+// Array estable a nivel de módulo: no se recrea en cada render
+const SECTION_IDS = SECTION_ANCHORS.map((s) => s.id);
+
 export default function HomePage() {
   const [category, setCategory] = useState<CourseCategory | 'Todas'>('Todas');
   const { courses, isLoading } = useCourses({ category });
@@ -48,7 +51,7 @@ export default function HomePage() {
   const nosotrosSectionRef = useScrollReveal<HTMLDivElement>();
   const blogSectionRef = useScrollReveal<HTMLDivElement>({ selector: ':scope > *' });
 
-  const activeSection = useActiveSection(SECTION_ANCHORS.map((s) => s.id));
+  const activeSection = useActiveSection(SECTION_IDS);
   const sideNavHidden = activeSection === 'hero';
 
   useEffect(() => {

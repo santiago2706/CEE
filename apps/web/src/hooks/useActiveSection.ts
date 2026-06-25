@@ -1,11 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** Observa una lista de IDs de sección y devuelve el más visible en viewport. */
 export function useActiveSection(sectionIds: string[]) {
   const [activeId, setActiveId] = useState(sectionIds[0] ?? '');
+  // Estabilizamos la dependencia: JSON.stringify solo cambia si los IDs cambian de verdad
+  const key = JSON.stringify(sectionIds);
+  const keyRef = useRef(key);
+  keyRef.current = key;
 
   useEffect(() => {
-    const elements = sectionIds
+    const ids: string[] = JSON.parse(keyRef.current);
+
+    const elements = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
 
@@ -27,7 +33,8 @@ export function useActiveSection(sectionIds: string[]) {
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [sectionIds]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   return activeId;
 }

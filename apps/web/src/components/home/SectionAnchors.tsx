@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useActiveSection } from '@/hooks/useActiveSection';
 
 interface SectionAnchor {
@@ -11,7 +12,8 @@ interface SectionAnchorsProps {
 }
 
 export function SectionAnchors({ sections, hidden }: SectionAnchorsProps) {
-  const activeId = useActiveSection(sections.map((s) => s.id));
+  const ids = useMemo(() => sections.map((s) => s.id), [sections]);
+  const activeId = useActiveSection(ids);
 
   return (
     <nav
