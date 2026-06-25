@@ -67,13 +67,13 @@ export default function HomePage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.intersectionRatio > 0.2) {
           document.body.classList.add('hero-visible');
         } else {
           document.body.classList.remove('hero-visible');
         }
       },
-      { threshold: 0.5 }
+      { threshold: [0.2] }
     );
 
     if (heroSectionRef.current) observer.observe(heroSectionRef.current);
