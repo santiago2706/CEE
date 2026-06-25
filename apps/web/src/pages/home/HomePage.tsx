@@ -69,7 +69,7 @@ export default function HomePage() {
 
       <section
         id="hero"
-        className="relative flex min-h-[85vh] items-center overflow-hidden bg-gradient-to-br from-cee-red-900 via-cee-red-700 to-cee-ink text-white sm:min-h-screen"
+        className="relative flex min-h-[85vh] items-center overflow-hidden bg-gradient-to-br from-cee-red-900 via-cee-red-700 to-cee-ink text-white sm:min-h-screen snap-always snap-start"
       >
         <div
           className="absolute inset-y-0 right-0 hidden w-3/5 sm:block sm:[clip-path:polygon(15%_0,100%_0,100%_100%,0_100%)]"
@@ -125,7 +125,7 @@ export default function HomePage() {
       <section
         id="eventos"
         ref={eventosSectionRef}
-        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 snap-always snap-start"
       >
         <div className="mb-6 flex flex-col gap-1 sm:mb-8">
           <p className="text-xs font-medium uppercase tracking-widest text-cee-red">
@@ -138,7 +138,7 @@ export default function HomePage() {
 
       <section
         id="programas"
-        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 snap-always snap-start"
       >
         <div
           ref={programasHeaderRef}
@@ -176,7 +176,7 @@ export default function HomePage() {
       <section
         id="nosotros"
         ref={nosotrosSectionRef}
-        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 snap-always snap-start"
       >
         <AboutSection />
       </section>
@@ -184,7 +184,7 @@ export default function HomePage() {
       <section
         id="blog"
         ref={blogSectionRef}
-        className="mx-auto max-w-7xl px-4 py-16 pb-24 sm:px-6 sm:py-20 sm:pb-24 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-16 pb-24 sm:px-6 sm:py-20 sm:pb-24 lg:px-8 snap-always snap-start"
       >
         <BlogSection />
       </section>

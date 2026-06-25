@@ -131,8 +131,7 @@
   font-family: 'Poppins', sans-serif;
 }
 
-/* Scroll natural en toda la Home; `scroll-padding-top` evita que el Navbar
-   sticky tape el destino al saltar por ancla (SectionAnchors). */
-.snap-container {
+html:has(.snap-container) {
+  scroll-snap-type: y mandatory;
   scroll-padding-top: 4rem;
 }
