@@ -132,6 +132,6 @@
 }
 
 html:has(.snap-container) {
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y proximity;
   scroll-padding-top: 4rem;
 }
