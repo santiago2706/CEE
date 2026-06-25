@@ -75,10 +75,11 @@ Responsabilidad clave: `config/navigation.ts` es la **lista única** de links de
 # Componentes Clave
 
 - **`Layout`** — compone Navbar + `<main><Outlet/></main>` + Footer; cascarón de todas las páginas públicas.
-- **`Navbar`** — doble logo (CEE en SVG + UNI en PNG, separador vertical), links desktop (desde `navigation.ts`), pestaña **`TeachersMenu`** (overlay accesible de profesores, `Popover` de Radix), botón "Mi Perfil" con **`Avatar`** (foto o iniciales), logout, sticky. El logo de la UNI y `TeachersMenu` se ocultan en mobile (el listado de profesores vive en `MobileMenu`).
-- **Profesores** (`/profesores/:slug`) — tipo `Teacher` (`@cee/types`, extiende `Instructor` con `slug`+`upcomingEvents`); mismas personas que la "Plana docente" del curso (`mockInstructors` reutilizado en `teachers.mock.ts`).
+- **`Navbar`** — doble logo (logotipo horizontal `CEE-logo.png` con el nombre del centro + UNI en PNG, separador vertical), links desktop (desde `navigation.ts`, incluye "Profesores" como item normal del nav), botón "Mi Perfil" con **`Avatar`** (foto o iniciales) que navega a `/perfil`, logout, sticky. El logo de la UNI se oculta en mobile.
+- **Profesores** — `/profesores` (listado, `ProfessorsPage`) y `/profesores/:slug` (perfil, `TeacherProfilePage`); tipo `Teacher` (`@cee/types`, extiende `Instructor` con `slug`+`upcomingEvents`); mismas personas que la "Plana docente" del curso (`mockInstructors` reutilizado en `teachers.mock.ts`). Es una página real, no un desplegable.
+- **Mi Perfil** — `/perfil` (`ProfilePage`): datos del estudiante (avatar, nombre, email, rol) + grid de **beneficios/descuentos** activos (tipo `Benefit` en `@cee/types`). Los beneficios se gestionan (CRUD completo) desde `apps/admin` (`/beneficios`); cada app tiene su propio mock — sin sincronización en vivo entre ambas hasta que exista la tabla `benefits` en Supabase (mismo patrón ya usado para `Course`).
 - **`MobileMenu`** — menú hamburguesa responsive (shadcn `Sheet`); mismos links que Navbar.
-- **`Footer`** — fondo gris oscuro/negro (token de marca para footer, no guinda), navegación, contacto, redes, copyright dinámico (`new Date().getFullYear()`).
+- **`Footer`** — fondo degradado guinda (`from-cee-red to-cee-red-dark`; se probó gris oscuro en la Iniciativa E y se revirtió a pedido del usuario), navegación, contacto, redes, copyright dinámico (`new Date().getFullYear()`).
 - **`WhatsAppFab`** — botón flotante fijo (esquina inferior derecha, todas las páginas), link a `CONTACT_INFO.whatsappUrl`, montado en `Layout`.
 - **`CourseCard`** — tarjeta de curso (precio tachado + CTA "Inscribirme", sin carrito).
 - **Detalle de curso** — breadcrumb, perfil del egresado, sílabo en acordeón, plana docente, sidebar (precio + "Inscribirme" + descargar sílabo PDF).
@@ -86,6 +87,7 @@ Responsabilidad clave: `config/navigation.ts` es la **lista única** de links de
 - **Home** también incluye `EventSlider` (carrusel de eventos, Embla), `AboutSection` y `BlogSection` (3 entradas más recientes del blog).
 - **Blog** (`/blog`, `/blog/:slug`) — listado con `BlogCard` y detalle con `Breadcrumb`, mismo patrón mock/Supabase que `coursesService`.
 - **Admin: Gestión de Cursos** — CRUD con badges de estado (Publicado / Borrador / En Revisión); formulario de registro/edición con `moodleCourseId` y subida de sílabo PDF.
+- **Admin: Beneficios** (`/beneficios`) — CRUD de descuentos/beneficios (título, valor, categoría, código, vigencia, activo/inactivo) que se muestran en `/perfil` del sitio público.
 - **Admin: Ventas** — KPIs (Total Ventas, Ingresos, Tasa de Conversión) + gráfico de tendencia con **recharts** + desglose por curso.
 
 ---

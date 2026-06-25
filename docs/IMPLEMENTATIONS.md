@@ -1950,6 +1950,106 @@ Las 7 iniciativas del plan de mejoras (`docs/mejoras-finale/mejoras-finales2.md`
 
 ---
 
+### ✅ Ajuste post-QA: Profesores como página propia (no desplegable) + logo con nombre + footer
+
+**Estado:** Completada
+**Fecha:** 2026-06-25
+
+#### Objetivo
+Tras el cierre del plan de mejoras, feedback directo del usuario pidió 4 ajustes puntuales sobre lo ya entregado en la Iniciativa F (Profesores) y B (Navbar): (1) que "Profesores" se vea como un link más del nav, no como botón rojo aparte; (2) que tenga una página de listado propia en `/profesores` en vez de vivir solo en un overlay; (3) revertir el color del Footer a su tono guinda anterior (el cambio a gris oscuro de la Iniciativa E no era lo que se quería mantener); (4) usar el logotipo horizontal con el nombre del centro en el Navbar en vez del isotipo suelto.
+
+#### Decisión: se elimina `TeachersMenu` (Popover) en vez de mantenerlo en paralelo
+Con `/profesores` como página real, el overlay accesible (`Popover` de Radix) construido en la Iniciativa F deja de tener razón de ser — mantenerlo habría sido una segunda forma de llegar a lo mismo, duplicando UI. Se eliminó `components/layout/TeachersMenu.tsx`, el primitivo `components/ui/popover.tsx` (sin otros consumidores) y la dependencia `@radix-ui/react-popover` (`pnpm --filter web remove`), en vez de dejarlos como código muerto. El bloque manual de "lista de profesores" que se había agregado al `MobileMenu` (Fase F) también se eliminó: ahora "Profesores" llega gratis a mobile/desktop/footer por ser una entrada más de `navigationLinks`.
+
+#### Decisión: "Profesores" se agrega a `navigationLinks` (única fuente de verdad), no se hardcodea en Navbar
+Se agregó `ROUTES.PROFESSORS = '/profesores'` y el link correspondiente en `config/navigation.ts`, en la posición Inicio → Nosotros → Programas → **Profesores** → Blog → Multimedia → Contacto. Al venir de `navigationLinks`, el Navbar ya lo renderiza con las mismas clases que el resto de items (sin trabajo adicional) y Footer/MobileMenu lo heredan automáticamente — exactamente la garantía que da esa fuente única.
+
+#### Decisión: color del Footer — revertido con `git log -p` sobre el archivo, no a ojo
+Se usó `git log --oneline -- apps/web/src/components/layout/Footer.tsx` y `git show <hash>:archivo` para confirmar el valor exacto previo al cambio de la Iniciativa E (commit `a2fb6be`): `bg-gradient-to-b from-cee-red to-cee-red-dark`. Se restauró ese valor exacto, sin tocar el resto del layout/contenido del footer (que sí se quiere conservar: contacto con íconos, redes, columnas).
+
+#### Decisión: logo — `CEE-logo.png` ya existía en el repo, no se generó un asset nuevo
+El usuario pidió "agregar el asset… que está en el kit de marca", pero `apps/web/src/assets/icons/CEE-logo.png` (501×137px, logotipo horizontal completo con el texto "CENTRO DE ESPECIALIZACIÓN EJECUTIVA" en los 3 colores de marca) ya estaba en el repo sin usar — confirmado visualmente. Se reemplazó el import de `logo2.svg` (isotipo solo, sin texto) por `CEE-logo.png` en `Navbar.tsx`, con `h-9` (cabe holgado en el header `h-16`) y `alt="Centro de Especialización Ejecutiva"`. El logo de la UNI (`uni-logo.png`) y el separador vertical se mantuvieron sin cambios.
+
+#### Cambios realizados
+- **`apps/web/src/constants/routes.ts`:** `PROFESSORS: '/profesores'`
+- **`apps/web/src/config/navigation.ts`:** nuevo link "Profesores"
+- **`apps/web/src/pages/professors/ProfessorsPage.tsx`** (nuevo): hero `bg-cee-red` + grid de `TeacherCard` (mismo patrón que `AboutPage`), usa `useTeachers()` (capa mock existente, sin datos hardcodeados), cada tarjeta enlaza a `/profesores/:slug`
+- **`apps/web/src/router/index.tsx`:** ruta `ROUTES.PROFESSORS` con `lazy()` + `Suspense`
+- **`apps/web/src/components/layout/Navbar.tsx`:** se quita `TeachersMenu`; logo cambiado a `CEE-logo.png`
+- **`apps/web/src/components/layout/MobileMenu.tsx`:** se quita el bloque manual de profesores y el hook `useTeachers` (ya no se usa ahí)
+- **`apps/web/src/components/layout/Footer.tsx`:** fondo revertido a `from-cee-red to-cee-red-dark`
+- **`apps/web/package.json`:** se quita `@radix-ui/react-popover`
+
+#### Archivos eliminados
+- ❌ `apps/web/src/components/layout/TeachersMenu.tsx`
+- ❌ `apps/web/src/components/ui/popover.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web lint` (`tsc --noEmit`): sin errores
+- ✅ `pnpm --filter web build`: sin errores; el chunk principal bajó de ~624kB a ~588kB al quitar `@radix-ui/react-popover`
+- ✅ `curl` a `/`, `/profesores`, `/profesores/dr-carlos-mendoza` y el resto de rutas públicas responde `200`
+- ✅ `grep` confirma cero referencias residuales a `TeachersMenu`/`components/ui/popover`
+- ✅ No se editó ningún archivo de `components/ui/` a mano (solo se eliminó uno que ya no tenía consumidores)
+
+---
+
+### ✅ Mi Perfil (estudiante) + gestión de Beneficios/Descuentos desde el admin
+
+**Estado:** Completada
+**Fecha:** 2026-06-25
+
+#### Objetivo
+A pedido del usuario, "Mi Perfil" deja de ser un placeholder que redirige a Home: ahora es una página real con la información del estudiante y sus beneficios/descuentos activos, y esos beneficios se gestionan (crear/editar/activar/eliminar) desde un nuevo módulo en `apps/admin`. Alcance confirmado explícitamente con el usuario: "vista en web + CRUD completo en admin" (se ofrecieron 3 opciones de alcance, esta fue la elegida).
+
+#### Decisión: `Benefit` vive en `@cee/types` (contrato compartido), no como input de UI
+A diferencia de `CourseFormInput`/`BenefitFormInput` (que sí son inputs de formulario y no van en `@cee/types`), `Benefit` es una entidad de dominio que se lee desde `apps/web` (perfil del estudiante) y se escribe desde `apps/admin` — ambas apps necesitan el mismo contrato, igual que `Course`. Se definió con campos camelCase en inglés (`discountLabel`, `validUntil`, `isActive`) consistente con el resto de `@cee/types`.
+
+#### Decisión: sin sincronización real entre las mutaciones del admin y los datos que ve el estudiante (todavía)
+`apps/web` y `apps/admin` son apps Vite independientes sin backend compartido en esta fase — exactamente la misma limitación que ya existe para `Course` (el CRUD de cursos en admin tampoco actualiza el catálogo mock de `apps/web` en tiempo real). Se siguió el mismo patrón ya establecido: cada app tiene su propio fixture mock (`apps/web/src/mocks/data/benefits.mock.ts` de solo lectura para el perfil; `apps/admin/src/mocks/benefits.ts` mutado en memoria por el CRUD), y ambos servicios (`benefits.service.ts` en web, `benefitsService.ts` en admin) ya tienen la rama Supabase (tabla `benefits`) lista para cuando exista ese backend compartido — en ese momento, las mutaciones del admin sí se reflejarán para el estudiante, sin tocar el resto del código (mismo mecanismo de `VITE_USE_MOCKS`).
+
+#### Decisión: "Mi Perfil" sin guard de ruta — la página decide qué mostrar
+`apps/web` no tiene un equivalente a `ProtectedRoute` de `apps/admin` (no hay sesiones por rol en el sitio público). En vez de añadir esa infraestructura solo para esta página, `ProfilePage.tsx` verifica `isAuthenticated` internamente y muestra un estado "Inicia sesión para ver tu perfil" con CTA a `/login` si no hay sesión — mismo criterio ya usado por otras páginas del sitio (ej. estados de carga/error en `CoursePage`, `BlogPostPage`) en vez de redirects forzados.
+
+#### Cambios realizados
+- **`packages/types/src/index.ts`:** `BenefitCategory`, `Benefit`
+- **`apps/web/src/mocks/data/benefits.mock.ts`** (nuevo), exportado desde `mocks/index.ts`
+- **`apps/web/src/services/benefits.service.ts`** (nuevo): `getActive()`, patrón mock/Supabase
+- **`apps/web/src/hooks/useBenefits.ts`** (nuevo)
+- **`apps/web/src/pages/profile/ProfilePage.tsx`** (nuevo): hero con avatar/nombre/email/rol + grid de tarjetas de beneficio (categoría, valor, código, vigencia)
+- **`apps/web/src/constants/routes.ts`:** `PROFILE: '/perfil'`
+- **`apps/web/src/router/index.tsx`:** ruta `lazy()` + `Suspense`
+- **`apps/web/src/components/layout/Navbar.tsx`, `MobileMenu.tsx`:** "Mi Perfil" ahora navega a `ROUTES.PROFILE` (antes `ROUTES.HOME`, placeholder)
+- **`apps/admin/src/mocks/benefits.ts`** (nuevo): mismos 4 beneficios de ejemplo que `apps/web` (punto de partida idéntico en ambas apps, aunque viven en mocks separados)
+- **`apps/admin/src/services/benefitsService.ts`** (nuevo): `getBenefits`, `getBenefitById`, `createBenefit`, `updateBenefit`, `toggleActive`, `deleteBenefit` — mismo patrón mock+Supabase que `coursesService.ts`
+- **`apps/admin/src/hooks/useBenefits.ts`** (nuevo)
+- **`apps/admin/src/constants/benefitCategory.ts`** (nuevo): labels/opciones de `BenefitCategory`
+- **`apps/admin/src/pages/BenefitsListPage.tsx`** (nuevo): tabla con búsqueda, filtro por categoría, toggle activo/inactivo, eliminar con `AlertDialog` — mismo patrón visual que `CoursesListPage.tsx`
+- **`apps/admin/src/pages/BenefitFormPage.tsx`** (nuevo): crear/editar (título, descripción, valor mostrado, categoría, código opcional, vigencia opcional, checkbox activo) — mismo patrón que `CourseFormPage.tsx`, sin subida de archivos (no aplica aquí)
+- **`apps/admin/src/lib/utils.ts`:** nuevo `formatDateLong()` (mismo helper que ya existía en `apps/web/src/lib/utils.ts`, no existía aún en admin)
+- **`apps/admin/src/router.tsx`:** rutas `/beneficios`, `/beneficios/nuevo`, `/beneficios/:id/editar`
+- **`apps/admin/src/components/layout/Sidebar.tsx`:** nuevo item "Beneficios" (ícono `Gift`) entre "Cursos" y "Ventas"
+
+#### Archivos nuevos
+- ✅ `packages/types/src/index.ts` (modificado, no nuevo)
+- ✅ `apps/web/src/mocks/data/benefits.mock.ts`, `services/benefits.service.ts`, `hooks/useBenefits.ts`, `pages/profile/ProfilePage.tsx`
+- ✅ `apps/admin/src/mocks/benefits.ts`, `services/benefitsService.ts`, `hooks/useBenefits.ts`, `constants/benefitCategory.ts`, `pages/BenefitsListPage.tsx`, `pages/BenefitFormPage.tsx`
+
+#### Archivos modificados
+- ✅ `apps/web/src/mocks/index.ts`, `constants/routes.ts`, `router/index.tsx`, `components/layout/Navbar.tsx`, `components/layout/MobileMenu.tsx`
+- ✅ `apps/admin/src/lib/utils.ts`, `router.tsx`, `components/layout/Sidebar.tsx`
+
+#### Verificación
+- ✅ `pnpm --filter web lint` / `pnpm --filter admin lint` (`tsc --noEmit`): ambos sin errores
+- ✅ `pnpm --filter web build` / `pnpm --filter admin build`: ambos sin errores
+- ✅ `curl` a `/perfil` (web) y `/beneficios`, `/beneficios/nuevo`, `/beneficios/ben001/editar` (admin) responde `200`
+- ⚠️ Sin `chromium-cli`/Playwright en este entorno; se recomienda probar el flujo completo crear→editar→activar/desactivar→eliminar en `/beneficios` y confirmar visualmente el perfil en `/perfil`
+
+#### Pendiente
+- Conectar `benefits` a una tabla real de Supabase cuando exista (las dos ramas `USE_MOCKS` ya están escritas, solo falta la tabla + `VITE_USE_MOCKS=false`)
+- Hoy los beneficios son globales para todo estudiante autenticado (no hay asignación por usuario) — si se requiere segmentación (ej. solo egresados de cierto programa), es un cambio de modelo de datos a futuro, no contemplado en este alcance
+
+---
+
 ## Notas de Arquitectura
 
 ### Decisión C — Especializaciones
