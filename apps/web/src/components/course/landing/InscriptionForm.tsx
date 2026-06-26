@@ -19,8 +19,6 @@ interface FormValues {
   name: string;
   email: string;
   phone: string;
-  company: string;
-  position: string;
   website: string; // honeypot
 }
 
@@ -28,8 +26,6 @@ const INITIAL_VALUES: FormValues = {
   name: '',
   email: '',
   phone: '',
-  company: '',
-  position: '',
   website: '',
 };
 
@@ -88,8 +84,8 @@ export function InscriptionForm({ course, source = 'landing' }: InscriptionFormP
         name: values.name.trim(),
         email: values.email.trim(),
         phone: values.phone.trim() || null,
-        company: values.company.trim() || null,
-        position: values.position.trim() || null,
+        company: null,
+        position: null,
         source,
         courseId: course.id,
         courseTitle: course.title,
@@ -114,27 +110,27 @@ export function InscriptionForm({ course, source = 'landing' }: InscriptionFormP
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
-      <div className="border-b border-border bg-muted/40 p-6">
+      <div className="border-b border-border bg-muted/40 p-5">
         <div className="flex flex-wrap items-baseline gap-2">
-          <p className="text-3xl font-extrabold text-foreground">{formatPrice(course.price)}</p>
+          <p className="text-2xl font-extrabold text-foreground">{formatPrice(course.price)}</p>
           {course.originalPrice && (
             <>
-              <p className="text-base text-muted-foreground line-through">
+              <p className="text-sm text-muted-foreground line-through">
                 {formatPrice(course.originalPrice)}
               </p>
               {discountPct !== null && (
-                <span className="text-sm font-semibold text-cee-red">{discountPct}% dto.</span>
+                <span className="text-xs font-semibold text-cee-red">{discountPct}% dto.</span>
               )}
             </>
           )}
         </div>
-        <h2 className="mt-3 text-xl font-bold text-foreground">Reserva tu cupo</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="mt-2 text-lg font-bold text-foreground">Reserva tu cupo</h2>
+        <p className="mt-0.5 text-xs text-muted-foreground">
           Déjanos tus datos y un asesor te contactará para completar tu inscripción.
         </p>
       </div>
 
-      <div className="p-6">
+      <div className="p-5">
         {isDone ? (
           <div className="flex flex-col items-center py-6 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-cee-red/10">
@@ -154,7 +150,7 @@ export function InscriptionForm({ course, source = 'landing' }: InscriptionFormP
             </Button>
           </div>
         ) : (
-          <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
+          <form className="grid gap-3" onSubmit={handleSubmit} noValidate>
             {/* Honeypot anti-spam: oculto para usuarios, visible para bots. */}
             <div
               className="absolute left-[-9999px] top-auto h-0 w-0 overflow-hidden"
@@ -210,28 +206,7 @@ export function InscriptionForm({ course, source = 'landing' }: InscriptionFormP
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="grid gap-1.5">
-                <Label htmlFor="lead-company">Empresa</Label>
-                <Input
-                  id="lead-company"
-                  value={values.company}
-                  onChange={handleChange('company')}
-                  autoComplete="organization"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="lead-position">Cargo</Label>
-                <Input
-                  id="lead-position"
-                  value={values.position}
-                  onChange={handleChange('position')}
-                  autoComplete="organization-title"
-                />
-              </div>
-            </div>
-
-            <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
+            <Button type="submit" size="lg" disabled={isSubmitting} className="mt-1 w-full">
               {isSubmitting ? 'Enviando...' : 'Quiero inscribirme'}
             </Button>
 

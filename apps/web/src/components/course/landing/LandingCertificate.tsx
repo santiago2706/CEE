@@ -18,20 +18,20 @@ export function LandingCertificate({ course }: LandingCertificateProps) {
     <div>
       <SectionHeading eyebrow="La recompensa" title="El respaldo de un certificado CEE-FIIS" />
 
-      <div className="mt-8 grid items-center gap-8 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-gradient-to-br from-muted/60 to-card p-8 text-center shadow-sm sm:p-12">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-cee-red-700 to-cee-ink shadow-lg">
-            <Award className="h-10 w-10 text-white" />
+      <div className="mt-6 grid items-center gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-border bg-gradient-to-br from-muted/60 to-card p-6 text-center shadow-sm sm:p-8">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cee-red-700 to-cee-ink shadow-lg">
+            <Award className="h-8 w-8 text-white" />
           </div>
-          <p className="mt-4 text-xs font-bold uppercase tracking-widest text-cee-red/70">
+          <p className="mt-3 text-[11px] font-bold uppercase tracking-widest text-cee-red/70">
             Centro de Extensión
           </p>
-          <p className="mt-1 text-sm font-bold text-foreground/80">
+          <p className="mt-1 text-xs font-bold text-foreground/80">
             Facultad de Ingeniería Industrial y de Sistemas
           </p>
-          <div className="mx-auto my-4 h-px w-20 bg-cee-red/30" />
-          <p className="text-lg font-extrabold leading-tight text-foreground">{course.title}</p>
-          <div className="mx-auto my-4 h-px w-20 bg-cee-red/30" />
+          <div className="mx-auto my-3 h-px w-16 bg-cee-red/30" />
+          <p className="text-base font-extrabold leading-tight text-foreground">{course.title}</p>
+          <div className="mx-auto my-3 h-px w-16 bg-cee-red/30" />
           <p className="text-xs font-semibold text-muted-foreground">
             {course.academicHours} horas académicas
           </p>
@@ -39,7 +39,7 @@ export function LandingCertificate({ course }: LandingCertificateProps) {
         </div>
 
         <div>
-          <p className="leading-relaxed text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             El Centro de Extensión de la FIIS-UNI es una institución de formación continua con
             amplia trayectoria. Un certificado CEE-FIIS es una señal clara de que fuiste formado
             bajo estándares académicos rigurosos por profesionales activos en la industria.

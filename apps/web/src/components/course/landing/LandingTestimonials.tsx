@@ -57,7 +57,7 @@ export function LandingTestimonials() {
         title="Lo que dicen nuestros egresados"
       />
 
-      <div className="relative mt-8">
+      <div className="relative mt-6">
         <button
           type="button"
           onClick={() => scrollByCards(-1)}
@@ -83,11 +83,13 @@ export function LandingTestimonials() {
             <article
               key={testimonial.name}
               data-card
-              className="w-[85vw] shrink-0 snap-start rounded-2xl border border-border bg-card p-8 sm:w-[420px]"
+              className="w-[85vw] shrink-0 snap-start rounded-xl border border-border bg-card p-6 sm:w-[380px]"
             >
-              <Quote className="h-10 w-10 text-cee-red/20" />
-              <p className="mt-4 leading-relaxed text-muted-foreground">{testimonial.quote}</p>
-              <div className="mt-6 flex items-center gap-3 border-t border-border pt-4">
+              <Quote className="h-8 w-8 text-cee-red/20" />
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {testimonial.quote}
+              </p>
+              <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cee-red font-bold text-white">
                   {getInitials(testimonial.name)}
                 </div>

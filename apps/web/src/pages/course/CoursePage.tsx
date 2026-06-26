@@ -97,17 +97,17 @@ export default function CoursePage() {
           </p>
         )}
 
-        <div className="mt-6 flex flex-wrap items-center gap-4">
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={scrollToInscription}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-cee-red transition-transform hover:scale-[1.02]"
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-cee-red transition-transform hover:scale-[1.02]"
           >
             Inscribirme ahora
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-4 w-4" />
           </button>
           <div className="flex items-baseline gap-2 text-white">
-            <span className="text-2xl font-extrabold">{formatPrice(course.price)}</span>
+            <span className="text-xl font-extrabold">{formatPrice(course.price)}</span>
             {course.originalPrice && (
               <span className="text-sm text-white/60 line-through">
                 {formatPrice(course.originalPrice)}
@@ -117,13 +117,15 @@ export default function CoursePage() {
         </div>
       </PageHeader>
 
-      <div className="mx-auto max-w-7xl px-4 pb-28 pt-10 sm:px-6 lg:px-8 lg:pb-16">
+      <div className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8 lg:pb-12">
         <LandingQuickFacts course={course} />
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-3">
-          <div className="space-y-16 lg:col-span-2">
+        <div className="mt-8 grid gap-8 lg:grid-cols-3">
+          <div className="space-y-12 lg:col-span-2">
             <LandingSection id="informacion" disableReveal>
-              <p className="text-lg leading-relaxed text-muted-foreground">{course.description}</p>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                {course.description}
+              </p>
             </LandingSection>
 
             <LandingSection>
@@ -162,7 +164,7 @@ export default function CoursePage() {
           </div>
         </div>
 
-        <div className="mt-16 space-y-16">
+        <div className="mt-12 space-y-12">
           <LandingSection>
             <LandingValueSummary course={course} />
           </LandingSection>

@@ -27,7 +27,7 @@ export function LandingStats({ course }: LandingStatsProps) {
         eyebrow="Respaldo institucional"
         title="Una formación con trayectoria comprobada"
       />
-      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <LandingStat key={stat.label} value={stat.value} label={stat.label} />
         ))}

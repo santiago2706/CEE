@@ -34,7 +34,7 @@ export function LandingFaq() {
   return (
     <div>
       <SectionHeading align="center" eyebrow="Resolvemos tus dudas" title="Preguntas frecuentes" />
-      <div className="mx-auto mt-8 max-w-3xl rounded-xl border border-border px-4">
+      <div className="mx-auto mt-6 max-w-3xl rounded-xl border border-border px-4">
         <Accordion type="single" collapsible className="w-full">
           {FAQS.map((faq) => (
             <AccordionItem key={faq.question} value={faq.question}>

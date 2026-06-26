@@ -21,15 +21,17 @@ export function SectionHeading({
   return (
     <div className={cn(isCenter && 'text-center', className)}>
       {eyebrow && (
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-cee-red">{eyebrow}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cee-red">
+          {eyebrow}
+        </p>
       )}
-      <h2 className={cn('text-2xl font-bold tracking-tight sm:text-3xl', eyebrow && 'mt-2')}>
+      <h2 className={cn('text-xl font-bold tracking-tight sm:text-2xl', eyebrow && 'mt-1.5')}>
         {title}
       </h2>
       {description && (
         <p
           className={cn(
-            'mt-3 text-muted-foreground',
+            'mt-2 text-sm text-muted-foreground',
             isCenter ? 'mx-auto max-w-2xl' : 'max-w-2xl',
           )}
         >

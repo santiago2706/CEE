@@ -16,12 +16,12 @@ export function LandingQuickFacts({ course }: LandingQuickFactsProps) {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {facts.map(({ icon: Icon, label, value }) => (
           <div key={label} className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cee-red/10">
-              <Icon className="h-5 w-5 text-cee-red" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cee-red/10">
+              <Icon className="h-4 w-4 text-cee-red" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-medium text-muted-foreground">{label}</p>

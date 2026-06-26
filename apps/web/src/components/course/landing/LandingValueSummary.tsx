@@ -17,7 +17,7 @@ export function LandingValueSummary({ course }: LandingValueSummaryProps) {
   return (
     <div>
       <SectionHeading align="center" title="Todo lo que recibes al inscribirte" />
-      <div className="mx-auto mt-8 grid max-w-3xl gap-4 sm:grid-cols-2">
+      <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-2">
         {items.map((item) => (
           <div
             key={item}

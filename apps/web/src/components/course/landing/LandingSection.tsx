@@ -29,7 +29,7 @@ export function LandingSection({
       ref={disableReveal ? undefined : revealRef}
       id={id}
       aria-label={ariaLabel}
-      className={cn('scroll-mt-24', className)}
+      className={cn('scroll-mt-20', className)}
     >
       {children}
     </section>

@@ -16,7 +16,7 @@ export function LandingInstructors({ instructors }: LandingInstructorsProps) {
         eyebrow="Autoridad y respaldo"
         title="Aprende de profesionales activos en la industria"
       />
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {instructors.map((instructor) => (
           <TeacherCard key={instructor.id} instructor={instructor} />
         ))}
