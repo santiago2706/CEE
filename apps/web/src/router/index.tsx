@@ -17,6 +17,9 @@ const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/legal/PrivacyPolicyPage'));
+const TermsPage = lazy(() => import('@/pages/legal/TermsPage'));
+const CookiePolicyPage = lazy(() => import('@/pages/legal/CookiePolicyPage'));
 const NotFoundPage = lazy(() => import('@/pages/not-found/NotFoundPage'));
 
 function withSuspense(element: JSX.Element) {
@@ -40,6 +43,9 @@ export const router = createBrowserRouter([
       { path: ROUTES.CONTACT, element: withSuspense(<ContactPage />) },
       { path: ROUTES.LOGIN, element: withSuspense(<LoginPage />) },
       { path: ROUTES.REGISTER, element: withSuspense(<RegisterPage />) },
+      { path: ROUTES.PRIVACY, element: withSuspense(<PrivacyPolicyPage />) },
+      { path: ROUTES.TERMS, element: withSuspense(<TermsPage />) },
+      { path: ROUTES.COOKIES, element: withSuspense(<CookiePolicyPage />) },
       { path: '*', element: withSuspense(<NotFoundPage />) },
     ],
   },

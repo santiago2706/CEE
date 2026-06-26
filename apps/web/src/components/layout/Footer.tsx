@@ -3,6 +3,8 @@ import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from 'luc
 import { BrochureDownloadButton } from '@/components/shared/BrochureDownloadButton';
 import { navigationLinks } from '@/config/navigation';
 import { CONTACT_INFO } from '@/constants/contact.constants';
+import { ROUTES } from '@/constants/routes';
+import { useConsentStore } from '@/store/consentStore';
 
 const socialLinks = [
   { label: 'Facebook', href: 'https://facebook.com', icon: Facebook },
@@ -12,6 +14,8 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const reopenConsent = useConsentStore((s) => s.reopen);
+
   return (
     <footer className="bg-gradient-to-b from-cee-red to-cee-red-dark text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-12 lg:px-8">
@@ -95,13 +99,23 @@ export function Footer() {
             &copy; {new Date().getFullYear()} Centro de Especialización Ejecutiva. Todos los
             derechos reservados.
           </p>
-          <div className="flex gap-5">
-            <Link to="#" className="transition-colors hover:text-white">
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link to={ROUTES.PRIVACY} className="transition-colors hover:text-white">
               Política de Privacidad
             </Link>
-            <Link to="#" className="transition-colors hover:text-white">
-              Términos de Servicio
+            <Link to={ROUTES.TERMS} className="transition-colors hover:text-white">
+              Términos y Condiciones
             </Link>
+            <Link to={ROUTES.COOKIES} className="transition-colors hover:text-white">
+              Política de Cookies
+            </Link>
+            <button
+              type="button"
+              onClick={reopenConsent}
+              className="text-inherit text-left transition-colors hover:text-white"
+            >
+              Preferencias de cookies
+            </button>
           </div>
         </div>
       </div>

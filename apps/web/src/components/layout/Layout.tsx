@@ -4,6 +4,7 @@ import { PageTransition } from '@/components/layout/PageTransition';
 import { Toaster } from '@/components/ui/toast';
 import { MemberPromo } from '@/components/shared/MemberPromo';
 import { WhatsAppFab } from '@/components/shared/WhatsAppFab';
+import { CookieConsent } from '@/components/shared/CookieConsent';
 import { Chatbot } from '@/components/chatbot/Chatbot';
 
 export function Layout() {
@@ -18,6 +19,7 @@ export function Layout() {
       <Toaster />
       <WhatsAppFab />
       <Chatbot />
+      <CookieConsent />
     </div>
   );
 }

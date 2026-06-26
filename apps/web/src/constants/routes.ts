@@ -12,4 +12,7 @@ export const ROUTES = {
   CONTACT: '/contacto',
   LOGIN: '/login',
   REGISTER: '/registro',
+  PRIVACY: '/privacidad',
+  TERMS: '/terminos',
+  COOKIES: '/cookies',
 } as const;

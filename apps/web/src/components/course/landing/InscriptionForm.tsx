@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import type { Course } from '@cee/types';
 import { CheckCircle2, Lock, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/useToast';
 import { contactService } from '@/services/contact.service';
 import { formatPrice } from '@/lib/utils';
+import { ROUTES } from '@/constants/routes';
 import { INSCRIPTION_ANCHOR_ID } from './landing-utils';
 
 interface InscriptionFormProps {
@@ -212,6 +214,14 @@ export function InscriptionForm({ course, source = 'landing' }: InscriptionFormP
             <Button type="submit" size="lg" disabled={isSubmitting} className="mt-1 w-full">
               {isSubmitting ? 'Enviando...' : 'Quiero inscribirme'}
             </Button>
+
+            <p className="text-center text-[11px] leading-snug text-muted-foreground">
+              Al enviar aceptas nuestra{' '}
+              <Link to={ROUTES.PRIVACY} className="text-cee-red underline-offset-2 hover:underline">
+                Política de Privacidad
+              </Link>
+              .
+            </p>
 
             <div className="flex items-center justify-center gap-4 pt-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">

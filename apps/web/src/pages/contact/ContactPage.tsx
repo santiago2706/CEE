@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone, BookOpen, Clock } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CONTACT_INFO } from '@/constants/contact.constants';
+import { ROUTES } from '@/constants/routes';
 import { useToast } from '@/hooks/useToast';
 import { contactService } from '@/services/contact.service';
 import { useCursoSeleccionado } from '@/hooks/useCursoSeleccionado';
@@ -239,6 +241,17 @@ export default function ContactPage() {
                       ? 'Enviar solicitud de inscripción'
                       : 'Enviar mensaje'}
                 </Button>
+
+                <p className="text-xs leading-snug text-muted-foreground">
+                  Al enviar aceptas nuestra{' '}
+                  <Link
+                    to={ROUTES.PRIVACY}
+                    className="text-cee-red underline-offset-2 hover:underline"
+                  >
+                    Política de Privacidad
+                  </Link>
+                  .
+                </p>
               </form>
             </CardContent>
           </Card>
