@@ -30,6 +30,12 @@ interface FormValues {
   modality: CourseModality;
   moodleCourseId: string;
   status: CourseStatus;
+  durationWeeks: string;
+  scheduleDescription: string;
+  startDate: string;
+  maxStudents: string;
+  minStudents: string;
+  alertDaysBefore: string;
 }
 
 const INITIAL_VALUES: FormValues = {
@@ -40,6 +46,12 @@ const INITIAL_VALUES: FormValues = {
   modality: 'Virtual',
   moodleCourseId: '',
   status: 'draft',
+  durationWeeks: '',
+  scheduleDescription: '',
+  startDate: '',
+  maxStudents: '',
+  minStudents: '',
+  alertDaysBefore: '',
 };
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
@@ -106,6 +118,12 @@ export default function CourseFormPage() {
           modality: course.modality,
           moodleCourseId: course.moodleCourseId != null ? String(course.moodleCourseId) : '',
           status: course.status,
+          durationWeeks: course.durationWeeks != null ? String(course.durationWeeks) : '',
+          scheduleDescription: course.scheduleDescription ?? '',
+          startDate: course.startDate ? course.startDate.slice(0, 10) : '',
+          maxStudents:     course.maxStudents     != null ? String(course.maxStudents)     : '',
+          minStudents:     course.minStudents     != null ? String(course.minStudents)     : '',
+          alertDaysBefore: course.alertDaysBefore != null ? String(course.alertDaysBefore) : '',
         });
         setSyllabusFileName(course.syllabusPdfUrl ? fileNameFromUrl(course.syllabusPdfUrl) : null);
       })
@@ -175,6 +193,12 @@ export default function CourseFormPage() {
         status: values.status,
         syllabusFileName,
         syllabusFile,
+        durationWeeks: values.durationWeeks ? Number(values.durationWeeks) : null,
+        scheduleDescription: values.scheduleDescription.trim() || null,
+        startDate: values.startDate || null,
+        maxStudents:     values.maxStudents     ? Number(values.maxStudents)     : null,
+        minStudents:     values.minStudents     ? Number(values.minStudents)     : null,
+        alertDaysBefore: values.alertDaysBefore ? Number(values.alertDaysBefore) : null,
       };
 
       if (isEditMode && id) {
@@ -253,6 +277,79 @@ export default function CourseFormPage() {
             {errors.moodleCourseId && (
               <p className="text-sm text-destructive">{errors.moodleCourseId}</p>
             )}
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="durationWeeks">Duración (semanas)</Label>
+            <Input
+              id="durationWeeks"
+              type="number"
+              min="1"
+              value={values.durationWeeks}
+              onChange={handleChange('durationWeeks')}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="maxStudents">Cupo máximo</Label>
+            <Input
+              id="maxStudents"
+              type="number"
+              min="1"
+              value={values.maxStudents}
+              onChange={handleChange('maxStudents')}
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="scheduleDescription">Horario</Label>
+            <Input
+              id="scheduleDescription"
+              placeholder="Lunes y Miércoles 7pm-9pm"
+              value={values.scheduleDescription}
+              onChange={handleChange('scheduleDescription')}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="startDate">Fecha de inicio</Label>
+            <Input
+              id="startDate"
+              type="date"
+              value={values.startDate}
+              onChange={handleChange('startDate')}
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="minStudents">Mínimo de alumnos para iniciar</Label>
+            <Input
+              id="minStudents"
+              type="number"
+              min="1"
+              placeholder="10"
+              value={values.minStudents}
+              onChange={handleChange('minStudents')}
+            />
+            <p className="text-[11px] text-[#A9A9A9]">Si hay menos inscritos al corte, se envía una alerta.</p>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="alertDaysBefore">Alertar con X días de anticipación</Label>
+            <Input
+              id="alertDaysBefore"
+              type="number"
+              min="1"
+              placeholder="7"
+              value={values.alertDaysBefore}
+              onChange={handleChange('alertDaysBefore')}
+            />
+            <p className="text-[11px] text-[#A9A9A9]">Días antes del inicio en que se revisa el cupo mínimo.</p>
           </div>
         </div>
 

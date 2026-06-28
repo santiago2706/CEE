@@ -1,32 +1,84 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
+  Award,
   BarChart2,
+  Bell,
   BookOpen,
   Bot,
+  CalendarDays,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Gift,
   LayoutDashboard,
   LogOut,
+  ShoppingBag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/authStore';
 
-const NAV_ITEMS: readonly { label: string; path: string; icon: React.ElementType }[] = [
-  { label: 'Dashboard',     path: '/',           icon: LayoutDashboard },
-  { label: 'Cursos',        path: '/cursos',      icon: BookOpen },
-  { label: 'Beneficios',    path: '/beneficios',  icon: Gift },
-  { label: 'Ventas',        path: '/ventas',      icon: BarChart2 },
-  { label: 'Asistente CEE', path: '/asistente',   icon: Bot },
-];
+// ─── Nav structure ────────────────────────────────────────────────────────────
+
+const TOP_ITEMS = [
+  { label: 'Dashboard', path: '/',        icon: LayoutDashboard },
+  { label: 'Cursos',    path: '/cursos',  icon: BookOpen },
+  { label: 'Eventos',   path: '/eventos', icon: CalendarDays },
+] as const;
+
+const VENTAS_CHILDREN = [
+  { label: 'Inscripciones', path: '/ventas',     icon: ShoppingBag },
+  { label: 'Beneficios',    path: '/beneficios', icon: Gift },
+] as const;
+
+const BOTTOM_ITEMS = [
+  { label: 'Certificados',   path: '/certificados',   icon: Award },
+  { label: 'Notificaciones', path: '/notificaciones', icon: Bell },
+  { label: 'Asistente CEE',  path: '/asistente',      icon: Bot },
+] as const;
+
+// ─── Style helpers ────────────────────────────────────────────────────────────
+
+// Corrección 1: item activo usa #4F1A1A (guinda oscuro) hardcodeado para
+// evitar que el token cee-red-dark quede sin generar en ciertos builds.
+// El hover blanco solo aplica en items inactivos.
+const ACTIVE_CLS   = 'bg-[#4F1A1A] text-white';
+const INACTIVE_CLS = 'text-white/80 hover:bg-white/95 hover:text-[#682222]';
+
+function navLinkCls(isActive: boolean, collapsed: boolean) {
+  return cn(
+    'flex items-center rounded-lg text-sm font-medium',
+    'transition-all duration-[400ms] ease-in-out',
+    collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5',
+    isActive ? ACTIVE_CLS : INACTIVE_CLS,
+  );
+}
+
+function subLinkCls(isActive: boolean) {
+  return cn(
+    'flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium',
+    'transition-all duration-[400ms] ease-in-out',
+    isActive ? ACTIVE_CLS : INACTIVE_CLS,
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [ventasOpen, setVentasOpen] = useState(true);
   const { user } = useAuthStore();
+  const location = useLocation();
 
   const initial = user?.name?.charAt(0).toUpperCase() ?? 'A';
+
+  // Grupo Ventas: está "activo" si cualquier ruta hija coincide
+  const isVentasActive = VENTAS_CHILDREN.some(
+    (c) => location.pathname === c.path || location.pathname.startsWith(c.path + '/'),
+  );
+  // El grupo permanece abierto si alguna hija está activa
+  const groupOpen = ventasOpen || isVentasActive;
 
   return (
     <aside
@@ -74,38 +126,93 @@ export function Sidebar() {
 
       <div className="mx-3 h-px bg-white/15" />
 
-      {/* ── Navegación principal ── */}
-      <nav className="flex-1 space-y-0.5 px-2 py-4">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          return (
+      {/* ── Navegación ── */}
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-4">
+
+        {/* Ítems superiores: Dashboard y Cursos */}
+        {TOP_ITEMS.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end={item.path === '/'}
+            title={collapsed ? item.label : undefined}
+            className={({ isActive }) => navLinkCls(isActive, collapsed)}
+          >
+            <item.icon className="h-4 w-4 shrink-0" />
+            {!collapsed && <span className="truncate">{item.label}</span>}
+          </NavLink>
+        ))}
+
+        {/* ── Grupo Ventas (colapsable) ── */}
+        {collapsed ? (
+          // Sidebar colapsado: los hijos se muestran como íconos directos
+          VENTAS_CHILDREN.map((child) => (
             <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/'}
-              title={collapsed ? item.label : undefined}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center rounded-lg text-sm font-medium transition-all duration-[400ms] ease-in-out',
-                  collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5',
-                  isActive
-                    ? 'bg-cee-red-dark text-white'
-                    : 'text-white/80 hover:bg-white/95 hover:text-[#682222]',
-                )
-              }
+              key={child.path}
+              to={child.path}
+              title={child.label}
+              className={({ isActive }) => navLinkCls(isActive, true)}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span className="truncate">{item.label}</span>}
+              <child.icon className="h-4 w-4 shrink-0" />
             </NavLink>
-          );
-        })}
+          ))
+        ) : (
+          // Sidebar expandido: cabecera colapsable + hijos
+          <div>
+            <button
+              type="button"
+              onClick={() => setVentasOpen((prev) => !prev)}
+              className={cn(
+                'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium',
+                'transition-all duration-[400ms] ease-in-out',
+                isVentasActive ? ACTIVE_CLS : INACTIVE_CLS,
+              )}
+            >
+              <BarChart2 className="h-4 w-4 shrink-0" />
+              <span className="flex-1 truncate text-left">Ventas</span>
+              <ChevronDown
+                className={cn(
+                  'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
+                  groupOpen ? 'rotate-180' : 'rotate-0',
+                )}
+              />
+            </button>
+
+            {groupOpen && (
+              <div className="mt-0.5 space-y-0.5 pl-3 pr-0">
+                {VENTAS_CHILDREN.map((child) => (
+                  <NavLink
+                    key={child.path}
+                    to={child.path}
+                    className={({ isActive }) => subLinkCls(isActive)}
+                  >
+                    <child.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{child.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Ítems inferiores: Certificados y Asistente */}
+        {BOTTOM_ITEMS.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            title={collapsed ? item.label : undefined}
+            className={({ isActive }) => navLinkCls(isActive, collapsed)}
+          >
+            <item.icon className="h-4 w-4 shrink-0" />
+            {!collapsed && <span className="truncate">{item.label}</span>}
+          </NavLink>
+        ))}
       </nav>
 
       {/* ── Usuario + Salir ── */}
       <div className="px-2 pb-4">
         <div className="mb-3 h-px bg-white/15" />
 
-        {/* Avatar + info del usuario */}
         {collapsed ? (
           <div className="mb-2 flex justify-center">
             <div
@@ -129,7 +236,6 @@ export function Sidebar() {
 
         <div className="mb-2 h-px bg-white/10" />
 
-        {/* Salir */}
         <button
           type="button"
           onClick={() => void authService.logout()}

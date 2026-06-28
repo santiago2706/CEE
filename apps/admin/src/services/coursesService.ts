@@ -36,6 +36,12 @@ export interface CourseFormInput {
   syllabusFileName: string | null;
   /** Archivo real del sílabo a subir a Supabase Storage; ausente si no se cambió. */
   syllabusFile?: File | null;
+  durationWeeks: number | null;
+  scheduleDescription: string | null;
+  startDate: string | null;
+  maxStudents: number | null;
+  minStudents: number | null;
+  alertDaysBefore: number | null;
 }
 
 function buildCourseFromInput(input: CourseFormInput, existing?: Course): Course {
@@ -54,7 +60,12 @@ function buildCourseFromInput(input: CourseFormInput, existing?: Course): Course
     price: input.price,
     originalPrice: existing?.originalPrice ?? null,
     imageUrl: existing?.imageUrl ?? '',
-    startDate: existing?.startDate ?? now,
+    startDate:       input.startDate ?? existing?.startDate ?? now,
+    durationWeeks:   input.durationWeeks,
+    scheduleDescription: input.scheduleDescription,
+    maxStudents:     input.maxStudents,
+    minStudents:     input.minStudents,
+    alertDaysBefore: input.alertDaysBefore,
     academicHours: existing?.academicHours ?? 0,
     certification: existing?.certification ?? 'Certificación CEE-FIIS',
     rating: existing?.rating ?? 0,
@@ -94,6 +105,11 @@ interface CourseRow {
   original_price: number | null;
   image_url: string;
   start_date: string;
+  duration_weeks: number | null;
+  schedule_description: string | null;
+  max_students: number | null;
+  min_students: number | null;
+  alert_days_before: number | null;
   academic_hours: number;
   certification: string;
   rating: number;
@@ -127,6 +143,11 @@ function formatCourse(row: CourseRow): Course {
     originalPrice: row.original_price != null ? Number(row.original_price) : null,
     imageUrl: row.image_url,
     startDate: row.start_date,
+    durationWeeks: row.duration_weeks,
+    scheduleDescription: row.schedule_description,
+    maxStudents:     row.max_students,
+    minStudents:     row.min_students,
+    alertDaysBefore: row.alert_days_before,
     academicHours: row.academic_hours,
     certification: row.certification,
     rating: Number(row.rating),
@@ -217,6 +238,12 @@ export const coursesService = {
         description: input.description,
         price: input.price,
         image_url: '',
+        start_date:         input.startDate,
+        duration_weeks:     input.durationWeeks,
+        schedule_description: input.scheduleDescription,
+        max_students:       input.maxStudents,
+        min_students:       input.minStudents,
+        alert_days_before:  input.alertDaysBefore,
         academic_hours: 0,
         certification: 'Certificación CEE-FIIS',
         moodle_course_id: input.moodleCourseId,
@@ -249,6 +276,12 @@ export const coursesService = {
       modality: input.modality,
       description: input.description,
       price: input.price,
+      start_date:         input.startDate,
+      duration_weeks:     input.durationWeeks,
+      schedule_description: input.scheduleDescription,
+      max_students:       input.maxStudents,
+      min_students:       input.minStudents,
+      alert_days_before:  input.alertDaysBefore,
       moodle_course_id: input.moodleCourseId,
       status: input.status,
     };

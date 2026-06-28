@@ -72,6 +72,11 @@ export interface Course {
   rating: number;
   enrolledCount: number;
   moodleCourseId: number | null; //TODO(backend): confirmar contrato — integración Moodle Fase 6
+  durationWeeks?: number | null;
+  scheduleDescription?: string | null;
+  maxStudents?: number | null;
+  minStudents?: number | null;      // mínimo de alumnos para que el curso se lleve a cabo
+  alertDaysBefore?: number | null;  // cuántos días antes alertar si hay bajo cupo
   syllabusPdfUrl: string;
   status: CourseStatus;
   graduateProfile: string[];
@@ -131,9 +136,107 @@ export interface Sale {
   courseId: string;
   courseName: string;
   userId: string;
+  studentName?: string | null;
   amount: number;
   date: string; // ISO datetime, ej. "2024-10-24T14:30:00Z"
   status: 'completed' | 'pending' | 'refunded';
+  notes?: string | null;
+  updatedAt?: string;
+}
+
+// ---------- Certificados ----------
+
+export type CertificateStatus = 'draft' | 'pending_signature' | 'signed' | 'revoked';
+
+export type SignatureProvider = 'manual' | 'digital';
+
+export interface Certificate {
+  id: string;
+  certificateNumber: string; // ej. "CEE-2026-0001"
+  studentName: string;
+  courseId: string;
+  courseName: string;
+  issuedAt: string;          // ISO date, ej. "2026-06-01"
+  status: CertificateStatus;
+  signedDocumentUrl?: string | null;
+  signatureProvider: SignatureProvider;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ---------- Notificaciones (admin) ----------
+
+export type NotificationType = 'low_enrollment' | 'new_lead' | 'event';
+
+/**
+ * Notificación interna para el panel de administración.
+ * Usa "AdminNotification" para no colisionar con el global DOM `Notification`.
+ */
+export interface AdminNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  courseId?: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
+// ---------- Eventos ----------
+
+export type EventStatus = 'draft' | 'published' | 'cancelled';
+
+export type EventRegistrationSource = 'web' | 'whatsapp' | 'manual';
+
+/**
+ * Evento presencial/virtual organizado por el CEE.
+ * Usa "CeeEvent" para no colisionar con el tipo global DOM `Event`.
+ */
+export interface CeeEvent {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  eventDate: string;    // ISO date "2026-07-01"
+  startTime: string;    // "15:00"
+  endTime: string;      // "19:00"
+  location: string;
+  capacity: number;
+  hasCertificate: boolean;
+  certificatePrice?: number | null;
+  status: EventStatus;
+  flyerUrl?: string | null;
+  registeredCount?: number; // derivado del conteo de inscripciones
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventRegistrationInput {
+  eventId: string;
+  firstName: string;
+  lastNamePaternal: string;
+  lastNameMaternal: string;
+  email: string;
+  phone: string;
+  isWorking: boolean;
+  wantsCertificate: boolean;
+  source: EventRegistrationSource;
+}
+
+export interface EventRegistration {
+  id: string;
+  eventId: string;
+  firstName: string;
+  lastNamePaternal: string;
+  lastNameMaternal: string;
+  email: string;
+  phone: string;
+  isWorking: boolean;
+  wantsCertificate: boolean;
+  certificatePaid: boolean;
+  source: EventRegistrationSource;
+  createdAt: string;
 }
 
 // ---------- Blog ----------

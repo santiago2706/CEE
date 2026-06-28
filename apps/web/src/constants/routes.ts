@@ -9,6 +9,8 @@ export const ROUTES = {
   PROFESSORS: '/profesores',
   PROFILE: '/perfil',
   TEACHER_PROFILE: '/profesores/:slug',
+  EVENTS: '/eventos',
+  EVENT_DETAIL: '/eventos/:slug',
   CONTACT: '/contacto',
   LOGIN: '/login',
   REGISTER: '/registro',
