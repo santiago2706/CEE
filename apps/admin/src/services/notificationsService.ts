@@ -57,6 +57,24 @@ let mockNotifs: AdminNotification[] = [
     isRead: true,
     createdAt: h(74),
   },
+  {
+    id: 'notif006',
+    type: 'course_confirmed',
+    title: 'Curso confirmado — Análisis de Datos para Negocios',
+    message: 'El curso "Análisis de Datos para Negocios con Python" inicia hoy con 15 alumnos inscritos. El mínimo requerido era 10.',
+    courseId: 'c002',
+    isRead: false,
+    createdAt: h(1),
+  },
+  {
+    id: 'notif007',
+    type: 'course_confirmed',
+    title: 'Curso confirmado — Ciberseguridad para Empresas',
+    message: 'El curso "Ciberseguridad para Empresas" inicia hoy con 22 alumnos inscritos. El mínimo requerido era 10.',
+    courseId: 'c016',
+    isRead: true,
+    createdAt: h(25),
+  },
 ];
 
 // ─── Supabase row type ────────────────────────────────────────────────────────

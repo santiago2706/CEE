@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import {
   Award,
   BarChart2,
@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Gift,
+  GraduationCap,
   LayoutDashboard,
   LogOut,
   ShoppingBag,
@@ -33,9 +34,10 @@ const VENTAS_CHILDREN = [
 ] as const;
 
 const BOTTOM_ITEMS = [
-  { label: 'Certificados',   path: '/certificados',   icon: Award },
-  { label: 'Notificaciones', path: '/notificaciones', icon: Bell },
-  { label: 'Asistente CEE',  path: '/asistente',      icon: Bot },
+  { label: 'Alumnos',        path: '/alumnos',         icon: GraduationCap },
+  { label: 'Certificados',   path: '/certificados',    icon: Award },
+  { label: 'Notificaciones', path: '/notificaciones',  icon: Bell },
+  { label: 'Asistente CEE',  path: '/asistente',       icon: Bot },
 ] as const;
 
 // ─── Style helpers ────────────────────────────────────────────────────────────
@@ -214,24 +216,29 @@ export function Sidebar() {
         <div className="mb-3 h-px bg-white/15" />
 
         {collapsed ? (
-          <div className="mb-2 flex justify-center">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/25 text-[13px] font-bold text-white"
-              title={user?.name ?? 'Admin'}
-            >
+          <Link
+            to="/perfil"
+            title="Mi perfil"
+            className="mb-2 flex justify-center rounded-lg transition-colors hover:bg-white/15"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/25 text-[13px] font-bold text-white">
               {initial}
             </div>
-          </div>
+          </Link>
         ) : (
-          <div className="mb-2 flex items-center gap-2.5 rounded-lg px-2 py-1.5">
+          <Link
+            to="/perfil"
+            className="group mb-2 flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/15"
+          >
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/25 text-[13px] font-bold text-white">
               {initial}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold text-white">{user?.name ?? 'Admin'}</p>
               <p className="truncate text-[10px] text-white/50">{user?.email ?? ''}</p>
             </div>
-          </div>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-white/30 opacity-0 transition-opacity group-hover:opacity-100" />
+          </Link>
         )}
 
         <div className="mb-2 h-px bg-white/10" />

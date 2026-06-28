@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bot, Send, User, Zap } from 'lucide-react';
-import type { CourseCategory, CourseModality } from '@cee/types';
+import type { CourseCategory, CourseModality, StudentSource } from '@cee/types';
 import { cn } from '@/lib/utils';
 import { coursesService } from '@/services/coursesService';
 import { salesRecordsService } from '@/services/salesRecordsService';
 import { certificatesService } from '@/services/certificatesService';
+import { studentsService } from '@/services/studentsService';
 
 // ─── Groq types ───────────────────────────────────────────────────────────────
 
@@ -153,6 +154,20 @@ const TOOLS = [
       parameters: { type: 'object', properties: {} },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'query_students',
+      description: 'Busca alumnos registrados en el sistema del CEE por nombre, DNI o fuente.',
+      parameters: {
+        type: 'object',
+        properties: {
+          search: { type: 'string', description: 'Nombre completo o DNI del alumno (opcional)' },
+          source: { type: 'string', enum: ['web', 'whatsapp', 'manual', 'referido'], description: 'Filtrar por fuente de captación (opcional)' },
+        },
+      },
+    },
+  },
 ];
 
 // ─── Groq API call ────────────────────────────────────────────────────────────
@@ -265,6 +280,18 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
         (c) => `- [${STATUS_LABEL[c.status] ?? c.status}] ${c.title} | ${c.modality} | S/ ${c.price} | ID: ${c.id}`,
       );
       return `${courses.length} curso(s):\n${lines.join('\n')}`;
+    }
+
+    case 'query_students': {
+      const { data: students } = await studentsService.getStudents({
+        search: (args.search as string | undefined) ?? '',
+        source: (args.source as string | undefined) as StudentSource | undefined,
+      });
+      if (students.length === 0) return 'No se encontraron alumnos con esos criterios.';
+      const lines = students.slice(0, 10).map(
+        (s) => `- ${s.firstName} ${s.lastNamePaterno} | DNI: ${s.dni} | ${s.phone} | Fuente: ${s.source}${s.profession ? ` | ${s.profession}` : ''}`,
+      );
+      return `${students.length} alumno(s) encontrado(s):\n${lines.join('\n')}${students.length > 10 ? `\n… y ${students.length - 10} más.` : ''}`;
     }
 
     default:

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Sale } from '@cee/types';
 import { utils as xlsxUtils, writeFile as xlsxWriteFile } from 'xlsx';
-import { Award, Download, Eye, MoreHorizontal, Plus } from 'lucide-react';
+import { Award, Download, Eye, MoreHorizontal, Plus, User } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -357,6 +357,15 @@ export default function SalesPage() {
                                 >
                                   <Award className="mr-2 h-4 w-4 text-[#682222]" />
                                   Emitir certificado
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {sale.studentId && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => navigate(`/alumnos/${sale.studentId}`)}>
+                                  <User className="mr-2 h-4 w-4 text-blue-600" />
+                                  Ver alumno
                                 </DropdownMenuItem>
                               </>
                             )}

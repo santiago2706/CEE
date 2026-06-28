@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AdminNotification } from '@cee/types';
-import { Bell, Users, UserPlus, CalendarDays, Check } from 'lucide-react';
+import { Bell, CheckCircle, Users, UserPlus, CalendarDays, Check } from 'lucide-react';
 import { notificationsService } from '@/services/notificationsService';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +30,12 @@ const TYPE_CONFIG = {
     label:   'Nuevo contacto',
     iconCls: 'text-blue-500',
     bgCls:   'bg-blue-50',
+  },
+  course_confirmed: {
+    icon:    CheckCircle,
+    label:   'Curso confirmado',
+    iconCls: 'text-emerald-500',
+    bgCls:   'bg-emerald-50',
   },
   event: {
     icon:    CalendarDays,

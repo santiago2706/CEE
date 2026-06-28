@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCourses } from '@/hooks/useCourses';
 import { useToast } from '@/hooks/useToast';
 import { certificatesService, type CertificateFormInput } from '@/services/certificatesService';
+import { studentsService } from '@/services/studentsService';
 
 interface FormValues {
   studentName: string;
@@ -50,6 +51,18 @@ export default function CertificateFormPage() {
   });
   const [errors, setErrors]         = useState<FormErrors>({});
   const [isSubmitting, setSubmitting] = useState(false);
+
+  // Pre-fill from ?student_id if present (overrides ?alumno)
+  useEffect(() => {
+    const studentId = params.get('student_id');
+    if (!studentId) return;
+    studentsService.getStudentById(studentId).then(({ data: s }) => {
+      setValues((prev) => ({
+        ...prev,
+        studentName: `${s.firstName} ${s.lastNamePaterno} ${s.lastNameMaterno}`.trim(),
+      }));
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // If the pre-filled courseId isn't in the loaded courses yet, wait for them
   // (no-op: the select will just show the right option once courses load)

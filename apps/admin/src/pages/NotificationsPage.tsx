@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AdminNotification, NotificationType } from '@cee/types';
-import { CalendarDays, Check, CheckCheck, Users, UserPlus } from 'lucide-react';
+import { CalendarDays, Check, CheckCheck, CheckCircle, Users, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Pagination } from '@/components/shared/Pagination';
@@ -14,16 +14,18 @@ const PAGE_SIZE = 20;
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG: Record<NotificationType, { label: string; icon: React.ElementType; cls: string }> = {
-  low_enrollment: { label: 'Bajo cupo',     icon: Users,        cls: 'bg-amber-50 text-amber-600' },
-  new_lead:       { label: 'Nuevo contacto', icon: UserPlus,    cls: 'bg-blue-50 text-blue-600' },
-  event:          { label: 'Evento',         icon: CalendarDays, cls: 'bg-purple-50 text-purple-600' },
+  low_enrollment:   { label: 'Bajo cupo',        icon: Users,         cls: 'bg-amber-50 text-amber-600' },
+  new_lead:         { label: 'Nuevo contacto',    icon: UserPlus,      cls: 'bg-blue-50 text-blue-600' },
+  event:            { label: 'Evento',            icon: CalendarDays,  cls: 'bg-purple-50 text-purple-600' },
+  course_confirmed: { label: 'Curso confirmado',  icon: CheckCircle,   cls: 'bg-emerald-50 text-emerald-600' },
 };
 
 const TYPE_FILTER_OPTIONS: { value: NotificationType | 'all'; label: string }[] = [
-  { value: 'all',           label: 'Todos los tipos' },
-  { value: 'low_enrollment', label: 'Bajo cupo' },
-  { value: 'new_lead',       label: 'Nuevo contacto' },
-  { value: 'event',          label: 'Evento' },
+  { value: 'all',              label: 'Todos los tipos' },
+  { value: 'low_enrollment',   label: 'Bajo cupo' },
+  { value: 'new_lead',         label: 'Nuevo contacto' },
+  { value: 'event',            label: 'Evento' },
+  { value: 'course_confirmed', label: 'Curso confirmado' },
 ];
 
 const READ_FILTER_OPTIONS = [

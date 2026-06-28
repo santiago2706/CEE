@@ -97,6 +97,25 @@ export interface User {
   avatarUrl: string;
 }
 
+// ---------- Configuración del sistema ----------
+
+export interface Setting {
+  key: string;
+  value: string;
+  description?: string;
+  updatedAt?: string;
+}
+
+// ---------- Perfil de usuario (admin) ----------
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'student';
+  avatarUrl?: string | null;
+}
+
 // ---------- Beneficios y descuentos (perfil del estudiante) ----------
 
 export type BenefitCategory = 'descuento' | 'acceso' | 'servicio';
@@ -129,6 +148,39 @@ export interface ContactLead {
   createdAt: string;
 }
 
+// ---------- Alumnos ----------
+
+export type StudentSource = 'web' | 'whatsapp' | 'manual' | 'referido';
+export type StudentGender = 'M' | 'F' | 'otro';
+
+export interface Student {
+  id: string;
+  dni: string;
+  firstName: string;
+  lastNamePaterno: string;
+  lastNameMaterno: string;
+  email?: string | null;
+  phone: string;
+  isWorking: boolean;
+  company?: string | null;
+  profession?: string | null;
+  address?: string | null;
+  district?: string | null;
+  city?: string | null;
+  birthDate?: string | null; // ISO date "YYYY-MM-DD"
+  gender?: StudentGender | null;
+  source: StudentSource;
+  notes?: string | null;
+  /**
+   * ID del usuario en Moodle LMS. Se usará en la integración futura con Moodle
+   * para sincronizar automáticamente las inscripciones del CEE con los accesos
+   * en la plataforma e-learning. Dejar en null hasta que se configure la integración.
+   */
+  moodleUserId?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ---------- Ventas (transaccional) ----------
 
 export interface Sale {
@@ -136,6 +188,7 @@ export interface Sale {
   courseId: string;
   courseName: string;
   userId: string;
+  studentId?: string | null;
   studentName?: string | null;
   amount: number;
   date: string; // ISO datetime, ej. "2024-10-24T14:30:00Z"
@@ -153,6 +206,7 @@ export type SignatureProvider = 'manual' | 'digital';
 export interface Certificate {
   id: string;
   certificateNumber: string; // ej. "CEE-2026-0001"
+  studentId?: string | null;
   studentName: string;
   courseId: string;
   courseName: string;
@@ -167,7 +221,7 @@ export interface Certificate {
 
 // ---------- Notificaciones (admin) ----------
 
-export type NotificationType = 'low_enrollment' | 'new_lead' | 'event';
+export type NotificationType = 'low_enrollment' | 'new_lead' | 'event' | 'course_confirmed';
 
 /**
  * Notificación interna para el panel de administración.
@@ -227,6 +281,7 @@ export interface EventRegistrationInput {
 export interface EventRegistration {
   id: string;
   eventId: string;
+  studentId?: string | null;
   firstName: string;
   lastNamePaternal: string;
   lastNameMaternal: string;

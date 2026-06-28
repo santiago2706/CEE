@@ -2,6 +2,44 @@
 
 Cron diario que detecta cursos con bajo cupo y envía alertas por email a la secretaria.
 
+## Setup completado
+
+### Función deployada
+- Project: `yusaeqpjnnxrykunzopr`
+- URL: `https://yusaeqpjnnxrykunzopr.supabase.co/functions/v1/check-enrollment`
+
+### Secrets a configurar en Supabase Dashboard
+Ir a: https://supabase.com/dashboard/project/yusaeqpjnnxrykunzopr/functions  
+Seleccionar **check-enrollment → Secrets → Add secret**
+
+Agregar estos 3 secrets:
+
+| Secret | Valor |
+|--------|-------|
+| `RESEND_API_KEY` | `re_xxxxxxxxx` _(reemplazar con key real de Resend)_ |
+| `SECRETARY_EMAIL` | `jose.canales.c@uni.pe` _(reemplazar en producción)_ |
+| `ADMIN_URL` | `http://localhost:5174` _(reemplazar en producción)_ |
+
+> `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` son inyectados automáticamente por Supabase — no es necesario agregarlos.
+
+### Activar el cron
+Ejecutar el archivo `supabase/migrations/0006_setup_cron_check_enrollment.sql`
+en **Supabase → SQL Editor**.
+
+El cron corre todos los días a las **8:00 AM hora Perú (13:00 UTC)**.
+
+### Probar manualmente
+```bash
+bash supabase/functions/check-enrollment/test.sh
+```
+
+### En producción cambiar solo los secrets
+```
+SECRETARY_EMAIL = secretaria@cee-fiis.edu.pe
+ADMIN_URL       = https://admin.cee-fiis.edu.pe
+```
+Sin tocar código.
+
 ## Lógica
 
 1. Consulta todos los cursos `published` con `start_date` entre hoy y `hoy + alert_days_before`.
@@ -24,6 +62,23 @@ Configurar en **Supabase Dashboard → Project Settings → Edge Functions → S
 
 > `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` se pueden configurar como secretos del proyecto
 > o simplemente usar las variables de entorno que Supabase inyecta automáticamente en la función.
+
+## Variables por entorno
+
+### Desarrollo / pruebas
+```
+SECRETARY_EMAIL = tu-correo-de-prueba@gmail.com
+SMTP_USER       = tu-correo-de-prueba@gmail.com
+```
+
+### Producción
+```
+SECRETARY_EMAIL = secretaria@cee-fiis.edu.pe   (reemplazar con correo real del CEE)
+SMTP_USER       = notificaciones@cee-fiis.edu.pe  (reemplazar con correo oficial)
+```
+
+> **Nunca hardcodear correos en el código.**
+> Cambiar solo en **Supabase Dashboard → Settings → Edge Functions → Environment Variables**.
 
 ## Deploy
 

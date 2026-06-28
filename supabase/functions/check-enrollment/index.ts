@@ -29,16 +29,22 @@ function buildEmailHtml(params: {
   enrolled: number;
   minStudents: number;
   adminUrl: string;
+  headerColor?: string;  // default: guinda #682222
+  headerTitle?: string;  // default: "⚠️ Alerta de bajo cupo"
 }): string {
-  const { courseTitle, startDateLabel, enrolled, minStudents, adminUrl } = params;
+  const {
+    courseTitle, startDateLabel, enrolled, minStudents, adminUrl,
+    headerColor = '#682222',
+    headerTitle = '⚠️ Alerta de bajo cupo',
+  } = params;
   return `
 <!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f5f5f5">
   <div style="max-width:600px;margin:0 auto;background:#ffffff">
-    <div style="background:#682222;padding:24px;text-align:center">
-      <h1 style="color:#ffffff;margin:0;font-size:20px">⚠️ Alerta de bajo cupo</h1>
+    <div style="background:${headerColor};padding:24px;text-align:center">
+      <h1 style="color:#ffffff;margin:0;font-size:20px">${headerTitle}</h1>
       <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px">CEE-FIIS · Centro de Especialización Ejecutiva</p>
     </div>
     <div style="padding:28px">
@@ -177,8 +183,82 @@ serve(async (_req) => {
       notified.push(course.title);
     }
 
+    // ── Check 2: Course confirmed (starts today with enough students) ─────────
+    const confirmed: string[] = [];
+    const coursesStartingToday = (courses ?? []).filter(
+      (c) => c.start_date === today && c.min_students,
+    );
+
+    for (const course of coursesStartingToday) {
+      const { count: salesCount } = await supabase
+        .from('sales')
+        .select('id', { count: 'exact', head: true })
+        .eq('course_id', course.id)
+        .eq('status', 'completed');
+
+      const enrolled = salesCount ?? 0;
+      if (enrolled < course.min_students) continue;
+
+      // Avoid duplicate in last 24h
+      const since24h = new Date(Date.now() - 24 * 3_600_000).toISOString();
+      const { count: existingCount } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('type', 'course_confirmed')
+        .eq('course_id', course.id)
+        .gte('created_at', since24h);
+
+      if ((existingCount ?? 0) > 0) continue;
+
+      const startDateLabel = fmtDate(course.start_date);
+      const title   = `Curso confirmado — ${course.title}`;
+      const message = `El curso "${course.title}" inicia hoy con ${enrolled} alumnos inscritos. El mínimo requerido era ${course.min_students}.`;
+
+      const { error: insertError } = await supabase.from('notifications').insert({
+        type:      'course_confirmed',
+        title,
+        message,
+        course_id: course.id,
+        is_read:   false,
+      });
+
+      if (insertError) {
+        console.error(`Error al insertar notificación confirmada para ${course.title}:`, insertError.message);
+        continue;
+      }
+
+      if (RESEND_API_KEY && SECRETARY_EMAIL) {
+        const emailRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization:  `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from:    'CEE-FIIS <notificaciones@cee-fiis.edu.pe>',
+            to:      [SECRETARY_EMAIL],
+            subject: `✅ Curso confirmado — ${course.title}`,
+            html:    buildEmailHtml({
+              courseTitle:    course.title,
+              startDateLabel,
+              enrolled,
+              minStudents:    course.min_students,
+              adminUrl:       ADMIN_URL,
+              headerColor:    '#1a6b35',  // verde — indica confirmación
+              headerTitle:    '✅ Curso confirmado',
+            }),
+          }),
+        });
+        if (!emailRes.ok) {
+          console.error(`Error Resend (confirmado) para ${course.title}:`, await emailRes.text());
+        }
+      }
+
+      confirmed.push(course.title);
+    }
+
     return new Response(
-      JSON.stringify({ ok: true, checked: coursesToCheck.length, notified }),
+      JSON.stringify({ ok: true, checked: coursesToCheck.length, notified, confirmed }),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   } catch (err) {

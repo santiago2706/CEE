@@ -1,5 +1,5 @@
-import { type ChangeEvent, type FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCourses } from '@/hooks/useCourses';
 import { useToast } from '@/hooks/useToast';
 import { salesRecordsService, type SaleFormInput } from '@/services/salesRecordsService';
+import { studentsService } from '@/services/studentsService';
 
 interface FormValues {
   studentName: string;
@@ -47,10 +48,23 @@ function validate(v: FormValues): FormErrors {
 
 export default function SaleFormPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { success, error } = useToast();
   const { courses } = useCourses();
 
   const [values, setValues]       = useState<FormValues>(INITIAL);
+
+  // Pre-fill from ?student_id if present
+  useEffect(() => {
+    const studentId = params.get('student_id');
+    if (!studentId) return;
+    studentsService.getStudentById(studentId).then(({ data: s }) => {
+      setValues((prev) => ({
+        ...prev,
+        studentName: `${s.firstName} ${s.lastNamePaterno} ${s.lastNameMaterno}`.trim(),
+      }));
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [errors, setErrors]       = useState<FormErrors>({});
   const [isSubmitting, setSubmitting] = useState(false);
 
