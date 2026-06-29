@@ -14,6 +14,7 @@ interface TeacherRow {
   title: string;
   bio: string;
   photo_url: string;
+  linkedin_url?: string;
   upcoming_events: Teacher['upcomingEvents'];
 }
 
@@ -25,6 +26,7 @@ function formatTeacher(row: TeacherRow): Teacher {
     title: row.title,
     bio: row.bio,
     photoUrl: row.photo_url,
+    linkedinUrl: row.linkedin_url,
     upcomingEvents: row.upcoming_events ?? [],
   };
 }

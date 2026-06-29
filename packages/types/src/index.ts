@@ -23,6 +23,7 @@ export interface Instructor {
   title: string;
   bio: string;
   photoUrl: string;
+  linkedinUrl?: string;
 }
 
 // ---------- Profesores (menú "Profesores" del Navbar + perfil completo) ----------

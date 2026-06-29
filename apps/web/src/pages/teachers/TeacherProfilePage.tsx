@@ -1,9 +1,16 @@
 import { useParams } from 'react-router-dom';
 import { CalendarDays } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { ROUTES } from '@/constants/routes';
 import { useTeacher } from '@/hooks/useTeacher';
 import { formatDateLong } from '@/lib/utils';
+
+const LinkedInLogo = () => (
+  <svg viewBox="0 0 24 24" className="h-6 w-6 fill-white" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.438-.103.249-.129.597-.129.946v5.421h-3.554s.05-8.789 0-9.514h3.554v1.347c.42-.648 1.36-1.573 3.322-1.573 2.432 0 4.261 1.589 4.261 5.004v4.736zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.706 0-.968.77-1.706 1.96-1.706 1.188 0 1.915.738 1.939 1.706 0 .948-.751 1.706-1.984 1.706zm1.581 11.597H3.635V9.038h3.283v11.414zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/>
+  </svg>
+);
 
 export default function TeacherProfilePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -42,9 +49,24 @@ export default function TeacherProfilePage() {
           className="h-28 w-28 shrink-0 rounded-full object-cover ring-4 ring-cee-red/15"
           loading="eager"
         />
-        <div>
-          <h1 className="text-2xl sm:text-3xl">{teacher.name}</h1>
-          <p className="mt-1 font-medium text-cee-red">{teacher.title}</p>
+        <div className="flex-1">
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl">{teacher.name}</h1>
+              <p className="mt-1 font-medium text-cee-red">{teacher.title}</p>
+            </div>
+            {teacher.linkedinUrl && (
+              <a
+                href={teacher.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0A66C2] transition hover:scale-110 hover:shadow-lg"
+                aria-label="Ver perfil en LinkedIn"
+              >
+                <LinkedInLogo />
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
