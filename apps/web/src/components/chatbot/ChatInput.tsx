@@ -9,7 +9,11 @@ export function ChatInput({ onSend, disabled }: Props) {
   const [text, setText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => {
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      inputRef.current?.focus();
+    }
+  }, []);
 
   function handleSend() {
     const trimmed = text.trim();

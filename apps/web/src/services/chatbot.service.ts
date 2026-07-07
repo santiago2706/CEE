@@ -1,12 +1,7 @@
-import type { ChatMessage, ChatAction, CardCourse } from '@/types/chatbot.types';
+import type { ChatAction, CardCourse } from '@/types/chatbot.types';
 import { useChatStore } from '@/store/chatStore';
 import { mockCatalogo as fallbackCatalogo } from '@/mocks/data/chatbot.mock';
 import { chatbotData } from '@/services/chatbot.data';
-import type {
-  MockCurso,
-  MockServicio,
-  MockTema,
-} from '@/types/chatbot.types';
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 
@@ -21,447 +16,125 @@ async function ensureCatalogo() {
   catalogo = await chatbotData.cargarCatalogo();
   catalogoCargado = true;
 }
-
-// Lanzar carga inmediatamente (no bloquear)
 ensureCatalogo();
 
-// ──────────────── Mock helpers ────────────────
+// ──────────────── Helpers ────────────────
 
-function findServiciosByCurso(codTipoCurso: number): MockServicio[] {
+function getServiciosPorCurso(codTipoCurso: number) {
   return catalogo.servicios.filter((s) => s.tipo_curso === codTipoCurso);
 }
 
-function getTemasByCurso(codTipoCurso: number): (MockTema & { secuencia_logica: number })[] {
+function getTemasPorCurso(codTipoCurso: number) {
   const rels = catalogo.silaboCursos.filter((r) => r.cod_tipo_curso === codTipoCurso);
   return rels
     .map((r) => {
       const tema = catalogo.temas.find((t) => t.cod_tema === r.cod_tema);
       return tema ? { ...tema, secuencia_logica: r.secuencia_logica } : null;
     })
-    .filter(Boolean) as (MockTema & { secuencia_logica: number })[];
+    .filter(Boolean)
+    .sort((a, b) => a!.secuencia_logica - b!.secuencia_logica);
 }
 
-function formatCursoLista(cursosQuery: string): string {
-  let cursos = [...catalogo.cursos];
-  const q = cursosQuery.toLowerCase();
-  if (q && q !== 'todos') {
-    const segmento = catalogo.segmentos.find(
-      (s) => s.nombre_segmento.toLowerCase().includes(q),
-    );
-    if (segmento) {
-      cursos = cursos.filter((c) => c.segmento_curso === segmento.segmento_curso);
-    }
-  }
-  return cursos
-    .slice(0, 6)
-    .map((c) => {
-      const svc = catalogo.servicios.find((s) => s.tipo_curso === c.cod_tipo_curso);
-      const precio = svc ? `S/ ${svc.tarifa_curso.toFixed(2)}` : '';
-      return `- **${c.nombre_curso}** ${precio ? `(${precio})` : ''}`;
-    })
-    .join('\n');
-}
-
-function formatTemario(codTipoCurso: number): string {
-  const temas = getTemasByCurso(codTipoCurso).sort((a, b) => a.secuencia_logica - b.secuencia_logica);
-  const curso = catalogo.cursos.find((c) => c.cod_tipo_curso === codTipoCurso);
-  const header = curso ? `**Temario de ${curso.nombre_curso}**\n\n` : '';
-  return (
-    header +
-    temas
-      .map(
-        (t) =>
-          `${t.secuencia_logica}. **${t.nombre_tema}** (${t.duracion_tema} min)${t.descripcion_tema ? `\n   ${t.descripcion_tema}` : ''}`,
-      )
-      .join('\n')
-  );
-}
-
-function formatPrecio(codTipoCurso: number): string {
-  const servicios = findServiciosByCurso(codTipoCurso);
-  if (!servicios.length) return 'No tengo información de precio para este curso.';
-  return (
-    servicios
-      .map((s) => {
-        const estado = s.estado_capacitacion === 'A' ? '✅ Disponible' : '❌ No disponible';
-        return `- **${s.descripcion_servicio}**: S/ ${s.tarifa_curso.toFixed(2)} — ${estado}`;
-      })
-      .join('\n') +
-    '\n\n[chip:Ver opciones de financiamiento](¿Qué opciones de financiamiento tienen?)'
-  );
-}
-
-function formatSegmentos(): string {
-  return (
-    '**Áreas de especialización disponibles:**\n\n' +
-    catalogo.segmentos.map((s) => `- ${s.nombre_segmento}`).join('\n')
-  );
-}
-
-// ──────────────── Mock Chatbot Engine ────────────────
-
-function classifyIntentMock(msg: string): string {
-  const m = msg.toLowerCase();
-
-  // Saludos y cortesías
-  if (/\b(hola|buenas|buenos d[ií]as|buenas tardes|buenas noches|hey\b|saludos|buen d[ií]a)\b/.test(m)) return 'saludo';
-  if (/\b(gracias|chau|adi[oó]s|hasta luego|nos vemos|bye)\b/.test(m)) return 'despedida';
-
-  // Intenciones comerciales / derivación
-  if (/\b(inscribir|inscripci[oó]n|matricular|matr[ií]cula|pagar|comprar|adquirir|quiero inscribirme|quiero matricularme)\b/.test(m)) return 'venta';
-  if (/\b(asesor|hablar con alguien|persona real|humano|ejecutivo|consultor|contactar|comunicarme|atender|ayuda humana|hablar con un)\b/.test(m)) return 'asesor';
-
-  // Precio / costo
-  if (/\b(precio|cu[aá]nto cuesta|cu[aá]nto sale|costo|inversi[oó]n|tarifa|cu[aá]nto vale|barato|caro|vale)\b/.test(m)) return 'precio';
-
-  // Financiamiento
-  if (/\b(financia|cuotas?|descuento|pronto pago|corporativo|fraccionado|pago|cr[eé]dito|al contado)\b/.test(m)) return 'financiamiento';
-
-  // Temario / sílabo
-  if (/\b(temario|s[ií]labo|temas|m[oó]dulos?|contenido|qu[eé] se ve|qu[eé] trae|qu[eé] incluye|plan de estudios|estructura)\b/.test(m)) return 'temario';
-
-  // Modalidad / nivel / horas / duración → devuelve detalle del curso
-  if (/\b(modalidad|nivel|horas? acad[eé]micas?|virtual|presencial|h[ií]brido|b[aá]sico|intermedio|avanzado|cu[aá]nto dura|cu[aá]ntas horas)\b/.test(m)) return 'curso';
-
-  // Certificación
-  if (/\b(certifica|diploma|certificado|aval|acredita|reconocimiento|t[ií]tulo|validez|valor curricular)\b/.test(m)) return 'certificacion';
-
-  // Ponentes
-  if (/\b(profesor|ponente|docente|instructor|plana docente|qui[eé]n dicta|qui[eé]n ense[ñn]a|qui[eé]nes son|profesores?)\b/.test(m)) return 'ponentes';
-
-  // Catálogo / listado
-  if (/\b(categor[ií]a|[aá]reas?|segmento|qu[eé] cursos|cat[aá]logo|programas|oferta|disponible|qu[eé] tienen|qu[eé] ofrecen|qu[eé] hay|mu[eé]strame|dime qu[eé]|ver cursos|listado|lista de|todos los)\b/.test(m)) return 'catalogo';
-
-  // Intento de búsqueda por nombre de curso
-  // Buscar fragmentos significativos de nombres de cursos
-  for (const c of catalogo.cursos) {
-    const keywords = c.nombre_curso.toLowerCase()
-      .replace(/[()]/g, '')
-      .split(/\s+/)
-      .filter((w) => w.length > 3);
-    const matched = keywords.filter((kw) => m.includes(kw));
-    if (matched.length >= 2) return 'curso';
-    // Si el nombre del curso es corto, basta con 1 keyword larga
-    if (matched.length >= 1 && matched[0].length > 6) return 'curso';
-  }
-
-  // También buscar nombres de segmentos
-  for (const seg of catalogo.segmentos) {
-    const segKW = seg.nombre_segmento.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
-    if (segKW.some((kw) => m.includes(kw))) return 'catalogo';
-  }
-
-  // Si la frase es corta y no es saludo, probablemente es una pregunta sobre cursos
-  if (m.length < 30) return 'catalogo';
-
-  return 'desconocido';
-}
-
-async function generateMockResponse(msg: string, _history: ChatMessage[], context: ReturnType<typeof useChatStore.getState>['context']): Promise<{ text: string; actions?: ChatAction[] }> {
-  const intent = classifyIntentMock(msg);
-  const m = msg.toLowerCase();
-  let foundCurso: MockCurso | null = null;
-
-  // Buscar curso mencionado en el mensaje
-  for (const c of catalogo.cursos) {
-    const parts = c.nombre_curso.toLowerCase().split(' ');
-    if (parts.some((p) => p.length > 4 && m.includes(p))) {
-      foundCurso = c;
-      break;
-    }
-  }
-  if (!foundCurso && context.lastCourseMentioned) {
-    foundCurso =
-      catalogo.cursos.find(
-        (c) => c.nombre_curso === context.lastCourseMentioned,
-      ) ?? null;
-  }
-
-  switch (intent) {
-    case 'saludo':
-      return {
-        text: `¡Hola! 👋 Soy **Ceci**, la asesora virtual del **Centro de Especialización Ejecutiva de la FIIS-UNI**. 
-
-Estoy aquí para ayudarte con información sobre nuestros cursos, horarios, precios, certificaciones y más.
-
-¿En qué tema te gustaría especializarte? Puedes preguntarme por un curso específico o explorar nuestras áreas:`,
-      };
-
-    case 'despedida':
-      return {
-        text: '¡Gracias por tu interés en el CEE-FIIS! 🎓 Si tienes más preguntas en el futuro, aquí estaré para ayudarte. ¡Mucho éxito!',
-      };
-
-    case 'catalogo': {
-      const segMencionado = catalogo.segmentos.find((s) =>
-        m.includes(s.nombre_segmento.toLowerCase().slice(0, 5)),
-      );
-      if (segMencionado) {
-        const cursosDeSeg = catalogo.cursos.filter((c) => c.segmento_curso === segMencionado.segmento_curso);
-        if (cursosDeSeg.length === 0) {
-          return {
-            text: `**${segMencionado.nombre_segmento}**\n\nPor ahora no tenemos cursos publicados en esta área. ¿Te interesa otra? Puedes ver nuestras áreas disponibles.`,
-          };
-        }
-        const cards: CardCourse[] = cursosDeSeg.slice(0, 6).map((c) => {
-          const svc = catalogo.servicios.find((s) => s.tipo_curso === c.cod_tipo_curso);
-          return {
-            id: c.cod_tipo_curso,
-            name: c.nombre_curso,
-            segment: segMencionado.nombre_segmento,
-            price: svc?.tarifa_curso ?? 0,
-            description: c.descripcion_curso ?? '',
-            imageUrl: `https://picsum.photos/seed/curso-cee-${c.cod_tipo_curso}/800/450`,
-            slug: c.slug,
-          };
-        });
-        return {
-          text: `**Cursos de ${segMencionado.nombre_segmento}**\n\nSelecciona uno para ver más detalles:`,
-          actions: [{ type: 'courses', courses: cards }],
-        };
-      }
-      // Sin segmento: mostrar solo áreas que tienen cursos publicados
-      const areaCards: CardCourse[] = catalogo.segmentos
-        .filter((seg) => catalogo.cursos.some((c) => c.segmento_curso === seg.segmento_curso))
-        .map((seg) => {
-          const conteo = catalogo.cursos.filter((c) => c.segmento_curso === seg.segmento_curso).length;
-          return {
-          id: seg.segmento_curso,
-          name: seg.nombre_segmento,
-          segment: '',
-          price: 0,
-          description: `${conteo} programas disponibles`,
-          imageUrl: `https://picsum.photos/seed/area-cee-${seg.segmento_curso}/800/450`,
-          slug: '',
-        };
-      });
-      return {
-        text: `**Áreas de especialización del CEE-FIIS**\n\nSelecciona un área para ver sus cursos:`,
-        actions: [{ type: 'courses', courses: areaCards }],
-      };
-    }
-
-    case 'curso': {
-      if (foundCurso) {
-        useChatStore.getState().setLastCourseMentioned(foundCurso.nombre_curso);
-        const svc = catalogo.servicios.find((s) => s.tipo_curso === foundCurso!.cod_tipo_curso);
-
-        let extra = '';
-        // Descripción corta
-        if (foundCurso.short_description) {
-          extra += `\n${foundCurso.short_description}`;
-        }
-        // Modalidad, nivel, horas
-        const detalles: string[] = [];
-        if (foundCurso.modality) detalles.push(`**Modalidad:** ${foundCurso.modality}`);
-        if (foundCurso.level) detalles.push(`**Nivel:** ${foundCurso.level}`);
-        if (foundCurso.academic_hours) detalles.push(`**Horas académicas:** ${foundCurso.academic_hours}`);
-        if (detalles.length) extra += `\n\n${detalles.join(' | ')}`;
-
-        // Precio y estado
-        if (svc) {
-          extra += `\n\n💰 Inversión: S/ ${svc.tarifa_curso.toFixed(2)}`;
-          if (svc.total_inscripciones >= 50) {
-            const redondeado = Math.floor(svc.total_inscripciones / 50) * 50;
-            extra += `\n📊 Más de ${redondeado} profesionales ya lo llevaron`;
-          } else {
-            extra += '\n📌 Cupos disponibles';
-          }
-          extra += `\n📌 Estado: ${svc.estado_capacitacion === 'A' ? 'Disponible' : 'No disponible por ahora'}`;
-        }
-
-        // PDF del sílabo
-        if (foundCurso.syllabus_pdf_url) {
-          extra += `\n\n📄 [Descargar sílabo en PDF](${foundCurso.syllabus_pdf_url})`;
-        }
-
-        return {
-          text: `**${foundCurso.nombre_curso}**${extra}\n\n¿Quieres ver el temario?`,
-        };
-      }
-      return {
-        text: `Claro, estos son algunos de nuestros cursos destacados:\n\n${formatCursoLista('todos')}\n\n¿Cuál te interesa?`,
-      };
-    }
-
-    case 'temario': {
-      if (foundCurso) {
-        return { text: formatTemario(foundCurso.cod_tipo_curso) };
-      }
-      return {
-        text: '¿De qué curso quieres ver el temario? Dime el nombre y te muestro los módulos y temas.',
-      };
-    }
-
-    case 'precio': {
-      useChatStore.getState().incrementPriceQuery();
-      if (foundCurso) {
-        return { text: formatPrecio(foundCurso.cod_tipo_curso) };
-      }
-      return {
-        text: '¿De qué curso quieres saber el precio? Dime el nombre y te doy todos los detalles de inversión.',
-      };
-    }
-
-    case 'financiamiento':
-      return {
-        text: `En el CEE-FIIS ofrecemos opciones de financiamiento flexible:
-
-- **Pago en cuotas sin intereses** con tarjeta de crédito
-- **Crédito directo CEE**: paga en 3 a 6 armadas
-- **Descuentos corporativos**: para grupos de 3+ personas de una misma empresa
-- **Pronto pago**: descuento especial por pago al contado
-
-[chip:Ver opciones de financiamiento](¿Qué opciones de financiamiento tienen?)`,
-      };
-
-    case 'certificacion':
-      return {
-        text: `Todos nuestros programas otorgan un **certificado a nombre de la Universidad Nacional de Ingeniería (UNI)**, con respaldo de la **Facultad de Ingeniería Industrial y de Sistemas (FIIS)** y el **Centro de Especialización Ejecutiva (CEE)**.
-
-El certificado incluye:
-- Nombre del programa y horas académicas
-- Nota final obtenida
-- Firmas del Decano de la FIIS y Director del CEE
-- Código QR de verificación
-
-Es un documento con valor curricular reconocido a nivel nacional.`,
-      };
-
-    case 'ponentes':
-      return {
-        text: `Nuestra plana docente está compuesta por profesionales con amplia experiencia en la industria y el sector académico:
-
-- **Docentes de la FIIS-UNI** con maestrías y doctorados
-- **Ejecutivos y consultores** de empresas líderes del país
-- **Expertos certificados** en metodologías como PMP, Scrum Master, CPA, etc.
-
-Todos nuestros ponentes pasan por un riguroso proceso de selección para garantizar la calidad académica que nos caracteriza.`,
-      };
-
-    case 'venta':
-      return {
-        text: `¡Qué bueno que quieras dar el siguiente paso! 🚀
-
-Para iniciar tu proceso de inscripción, te invito a contactar a nuestro equipo comercial por **WhatsApp**. Ellos te guiarán paso a paso y resolverán cualquier duda sobre el proceso de matrícula.
-
-Haz clic en el botón verde de WhatsApp que está en la esquina de la página o escríbenos directamente. ¿Necesitas ayuda con algo más mientras tanto?`,
-      };
-
-    case 'asesor':
-      return {
-        text: `¡Claro! Te conecto con un asesor humano. 📞
-
-Puedes contactarnos directamente por:
-- **WhatsApp**: [+51 966 644 502](https://wa.me/51966644502)
-- **Correo**: contacto@cee-fiis.edu.pe
-
-Un asesor especializado te atenderá a la brevedad. ¿Hay algo más en lo que pueda ayudarte mientras tanto?`,
-      };
-
-    default:
-      // En vez de rechazar la consulta, mostramos áreas disponibles como ayuda
-      return {
-        text: `Entiendo tu interés. Aquí tienes las **áreas de especialización** del CEE-FIIS:\n\n${formatSegmentos()}\n\nTambién te comparto algunos de nuestros cursos destacados:\n\n${formatCursoLista('todos')}\n\n¿Cuál te gustaría conocer más a detalle? 😊`,
-      };
-  }
-}
-
-// ──────────────── Groq API directa (local dev) ────────────────
+// ──────────────── Groq API ────────────────
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY as string;
 const GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
 
-interface GroqToolCall {
-  id: string;
-  type: 'function';
-  function: { name: string; arguments: string };
-}
-
-interface GroqMessage {
+interface GroqMsg {
   role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
   tool_call_id?: string;
-  tool_calls?: GroqToolCall[];
+  tool_calls?: { id: string; type: 'function'; function: { name: string; arguments: string } }[];
 }
+
+// ──────────────── System Prompt ────────────────
 
 const SYSTEM_PROMPT = `Eres Ceci, la asesora virtual del Centro de Especialización Ejecutiva de la Universidad Nacional de Ingeniería (CEE-FIIS), en Lima, Perú.
 
 ## Tu rol
-Ayudas a profesionales interesados en programas de especialización del CEE-FIIS. Proporcionas información precisa sobre cursos, precios, horarios, temarios, certificaciones.
+Ayudas a profesionales interesados en programas de especialización del CEE-FIIS. Proporcionas información precisa sobre cursos, precios, temarios y certificaciones.
 
-## Datos del CEE
+## Datos de contacto
 - WhatsApp: +51 966 644 502
 - Correo: contacto@cee-fiis.edu.pe
 
-## REGLA DE ORO: SIEMPRE USA HERRAMIENTAS
-NUNCA inventes nombres de cursos, precios o temarios. Para CUALQUIER consulta sobre cursos, precios o temarios, PRIMERO usa la herramienta buscar_cursos para encontrar el curso, LUEGO usa el ID devuelto para llamar a la herramienta específica (detalle_curso, temario_curso, etc).
+## Herramientas
+Tienes acceso a herramientas para consultar la base de datos de cursos. NUNCA inventes nombres, precios ni detalles de cursos. Usa las herramientas para obtener datos reales.
 
-Ejemplo de flujo:
-1. Usuario: "¿Cuánto cuesta el curso de Finanzas?"
-2. Tú llamas a buscar_cursos con query="Finanzas"
-3. Obtienes resultados con IDs de cursos
-4. Llamas a detalle_curso con el curso_id correcto (número)
-5. Respondes con los datos reales
+## Cómo responder
+- **Saludos** ("hola", "buenas", "qué tal"): SOLO responde con un saludo cordial de 1-2 líneas. NO uses herramientas. NO muestres cursos. Ejemplo: "¡Hola! 👋 Soy Ceci, asesora virtual del CEE-FIIS. ¿En qué área te gustaría especializarte?"
+- **Catálogo** (el usuario pide ver cursos): usa buscar_cursos para encontrar cursos. Menciona nombre y precio. Sé conciso, máximo 5 cursos por respuesta.
+- **Temario**: usa temario_curso. Lista los temas en orden numerado con su duración. Solo si el usuario lo pide explícitamente.
+- **Precio**: usa detalle_curso. Muestra solo el precio y agrega: [chip:Ver opciones de financiamiento](¿Qué opciones de financiamiento tienen?). Sé breve.
+- **Certificación / ponentes**: 2-3 líneas máximo explicando que el certificado es a nombre de la UNI-FIIS.
+- **Financiamiento**: explica en 2-3 bullet points.
+- **Inscripción / pago**: deriva a WhatsApp (+51 966 644 502). Una sola línea.
+- **Asesor humano**: proporciona WhatsApp y correo. Una sola línea.
+- **Preguntas fuera del CEE**: una línea declinando y una línea ofreciendo ver cursos.
 
-Si el usuario pregunta por un área general ("tecnología", "gestión"), usa buscar_cursos con el segmento correspondiente. Si pregunta por un curso específico, busca por nombre.
+## Regla de oro
+- Respuestas CORTAS. Máximo 4 líneas. El usuario está en un chat, no leyendo un email.
+- SOLO usa herramientas cuando el usuario pide explícitamente cursos, precios o temarios.
+- NUNCA muestres el catálogo completo sin que el usuario lo pida.
 
-## Comportamiento
-- NO gestionas ventas: deriva a WhatsApp (+51 966 644 502)
-- Para preguntas fuera del CEE: responde breve y redirige a la oferta de cursos
-- Tono: cercano, profesional. Usa Markdown. Responde en español. Cierra con pregunta.`;
+## Tono
+Cercano, profesional, CONCISO. Respuestas de 2-4 líneas. Usa Markdown. Español. Máximo 1 emoji por mensaje. NUNCA hagas listas enormes ni muestres todo el catálogo sin que te lo pidan.`;
 
-const TOOL_DEFS = [
+// ──────────────── Tool Definitions ────────────────
+
+const TOOLS = [
   {
-    type: 'function',
+    type: 'function' as const,
     function: {
       name: 'get_segmentos',
-      description: 'Obtiene las áreas/segmentos de especialización del CEE (ej. Gestión de Proyectos, Tecnología, Finanzas).',
-      parameters: { type: 'object', properties: {}, required: [] },
+      description: 'Obtiene las áreas de especialización del CEE.',
+      parameters: { type: 'object' as const, properties: {}, required: [] as string[] },
     },
   },
   {
-    type: 'function',
+    type: 'function' as const,
     function: {
       name: 'buscar_cursos',
-      description: 'Busca cursos por nombre, descripción o área de especialización.',
+      description: 'Busca cursos por nombre, descripción o área. Usa query vacío ("") para obtener todos.',
       parameters: {
-        type: 'object',
+        type: 'object' as const,
         properties: {
-          query: { type: 'string', description: 'Texto de búsqueda' },
-          segmento: { type: 'string', description: 'Nombre del área para filtrar (opcional)' },
+          query: { type: 'string', description: 'Texto a buscar (nombre del curso o área). Vacío = todos.' },
+          segmento: { type: 'string', description: 'Nombre del área para filtrar (opcional).' },
         },
-        required: ['query'],
+        required: ['query'] as string[],
       },
     },
   },
   {
-    type: 'function',
+    type: 'function' as const,
     function: {
       name: 'detalle_curso',
-      description: 'Obtiene detalle completo de un curso: descripción, precio, horas académicas.',
+      description: 'Obtiene el detalle de un curso: descripción, precio, modalidad, nivel, duración, PDF.',
       parameters: {
-        type: 'object',
-        properties: { curso_id: { type: 'integer', description: 'ID del curso' } },
-        required: ['curso_id'],
+        type: 'object' as const,
+        properties: { curso_id: { type: 'integer', description: 'ID del curso (cod_tipo_curso)' } },
+        required: ['curso_id'] as string[],
       },
     },
   },
   {
-    type: 'function',
+    type: 'function' as const,
     function: {
       name: 'temario_curso',
-      description: 'Obtiene el temario de un curso: temas en orden, con duración de cada bloque.',
+      description: 'Obtiene el temario de un curso: temas en orden de secuencia con duración de cada bloque.',
       parameters: {
-        type: 'object',
-        properties: { curso_id: { type: 'integer', description: 'ID del curso' } },
-        required: ['curso_id'],
+        type: 'object' as const,
+        properties: { curso_id: { type: 'integer', description: 'ID del curso (cod_tipo_curso)' } },
+        required: ['curso_id'] as string[],
       },
     },
   },
 ];
 
-function ejecutarToolLocal(name: string, args: Record<string, unknown>): unknown {
+// ──────────────── Tool Execution ────────────────
+
+function ejecutarHerramienta(name: string, args: Record<string, unknown>): unknown {
   const cursoId = args.curso_id ? Number(args.curso_id) : 0;
 
   switch (name) {
@@ -473,9 +146,7 @@ function ejecutarToolLocal(name: string, args: Record<string, unknown>): unknown
       const segmento = args.segmento ? String(args.segmento).toLowerCase() : '';
       let cursos = [...catalogo.cursos];
       if (segmento) {
-        const seg = catalogo.segmentos.find(
-          (s) => s.nombre_segmento.toLowerCase().includes(segmento),
-        );
+        const seg = catalogo.segmentos.find((s) => s.nombre_segmento.toLowerCase().includes(segmento));
         if (seg) cursos = cursos.filter((c) => c.segmento_curso === seg.segmento_curso);
       }
       if (query && query !== 'todos') {
@@ -491,27 +162,32 @@ function ejecutarToolLocal(name: string, args: Record<string, unknown>): unknown
         return {
           id: c.cod_tipo_curso,
           nombre: c.nombre_curso,
-          descripcion: c.descripcion_curso,
+          descripcion: c.short_description || c.descripcion_curso || '',
           segmento: seg?.nombre_segmento ?? '',
           precio: svc?.tarifa_curso ?? 0,
           inscripciones: svc?.total_inscripciones ?? 0,
+          slug: c.slug,
+          modality: c.modality || '',
         };
       });
     }
 
     case 'detalle_curso': {
-      if (!cursoId) return { error: 'curso_id es requerido (número)' };
+      if (!cursoId) return { error: 'curso_id es requerido' };
       const curso = catalogo.cursos.find((c) => c.cod_tipo_curso === cursoId);
       if (!curso) return { error: `Curso con ID ${cursoId} no encontrado` };
       const seg = catalogo.segmentos.find((s) => s.segmento_curso === curso.segmento_curso);
-      const svcs = catalogo.servicios.filter((s) => s.tipo_curso === cursoId);
+      const svcs = getServiciosPorCurso(cursoId);
       return {
         id: curso.cod_tipo_curso,
         nombre: curso.nombre_curso,
-        descripcion: curso.descripcion_curso,
+        descripcion: curso.short_description || curso.descripcion_curso || '',
         segmento: seg?.nombre_segmento ?? '',
+        modalidad: curso.modality || 'No especificada',
+        nivel: curso.level || 'No especificado',
+        horas: curso.academic_hours || 0,
+        pdf: curso.syllabus_pdf_url || null,
         servicios: svcs.map((s) => ({
-          nombre: s.descripcion_servicio,
           precio: s.tarifa_curso,
           inscripciones: s.total_inscripciones,
           estado: s.estado_capacitacion === 'A' ? 'Disponible' : 'No disponible',
@@ -520,22 +196,14 @@ function ejecutarToolLocal(name: string, args: Record<string, unknown>): unknown
     }
 
     case 'temario_curso': {
-      if (!cursoId) return { error: 'curso_id es requerido (número)' };
-      const rels = catalogo.silaboCursos.filter((r) => r.cod_tipo_curso === cursoId);
-      return rels
-        .map((r) => {
-          const tema = catalogo.temas.find((t) => t.cod_tema === r.cod_tema);
-          return tema
-            ? {
-                secuencia: r.secuencia_logica,
-                tema: tema.nombre_tema,
-                descripcion: tema.descripcion_tema,
-                duracion_min: tema.duracion_tema,
-              }
-            : null;
-        })
-        .filter(Boolean)
-        .sort((a, b) => a!.secuencia - b!.secuencia);
+      if (!cursoId) return { error: 'curso_id es requerido' };
+      const temas = getTemasPorCurso(cursoId);
+      return temas.map((t) => ({
+        secuencia: t!.secuencia_logica,
+        tema: t!.nombre_tema,
+        descripcion: t!.descripcion_tema,
+        duracion_min: t!.duracion_tema,
+      }));
     }
 
     default:
@@ -543,133 +211,140 @@ function ejecutarToolLocal(name: string, args: Record<string, unknown>): unknown
   }
 }
 
-async function enviarAGroq(userMessages: { role: string; content: string }[]): Promise<string> {
-  const showTools = userMessages.length > 2; // No usar tools en el saludo inicial
+/** Extrae CardCourse[] de los resultados de herramientas */
+function extraerCards(toolResults: { name: string; data: unknown }[]): CardCourse[] {
+  const cards: CardCourse[] = [];
+  const seen = new Set<number>();
 
-  const body: Record<string, unknown> = {
-    model: 'llama-3.3-70b-versatile',
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...userMessages.map((m) => ({
-        role: m.role as GroqMessage['role'],
-        content: m.content,
-      })),
-    ],
-    max_tokens: 1024,
-    temperature: 0.7,
-  };
-
-  if (showTools) {
-    body.tools = TOOL_DEFS;
+  for (const tr of toolResults) {
+    if (tr.name === 'buscar_cursos' && Array.isArray(tr.data)) {
+      for (const c of tr.data as Record<string, unknown>[]) {
+        const id = Number(c.id);
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        cards.push({
+          id,
+          name: String(c.nombre || ''),
+          segment: String(c.segmento || ''),
+          price: Number(c.precio || 0),
+          description: String(c.descripcion || ''),
+          imageUrl: '',
+          slug: String(c.slug || ''),
+        });
+      }
+    }
+    if (tr.name === 'detalle_curso' && tr.data && !(tr.data as Record<string, unknown>).error) {
+      const d = tr.data as Record<string, unknown>;
+      const id = Number(d.id);
+      if (id && !seen.has(id)) {
+        seen.add(id);
+        cards.push({
+          id,
+          name: String(d.nombre || ''),
+          segment: String(d.segmento || ''),
+          price: Array.isArray(d.servicios) ? Number((d.servicios as Record<string, unknown>[])[0]?.precio || 0) : 0,
+          description: String(d.descripcion || ''),
+          imageUrl: '',
+          slug: catalogo.cursos.find((c) => c.cod_tipo_curso === id)?.slug || '',
+        });
+      }
+    }
   }
 
-  const res = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+  return cards;
+}
+
+// ──────────────── Groq Call ────────────────
+
+async function enviarAGroq(
+  userMessages: { role: string; content: string }[],
+): Promise<{ text: string; actions?: CardCourse[] }> {
+  const messages: GroqMsg[] = [
+    { role: 'system', content: SYSTEM_PROMPT },
+    ...userMessages.map((m) => ({ role: m.role as GroqMsg['role'], content: m.content })),
+  ];
+
+  const toolResults: { name: string; data: unknown }[] = [];
+
+  // Llamada inicial con herramientas
+  let res = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
+    headers: { Authorization: `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages, max_tokens: 1024, temperature: 0.7, tools: TOOLS }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    console.error(`[Ceci] Groq ${res.status}:`, err.slice(0, 300));
-    throw new Error(`API ${res.status}: ${err.slice(0, 150)}`);
+    console.error(`[Ceci] Groq error:`, err.slice(0, 200));
+    throw new Error(`API ${res.status}`);
   }
 
-  const completion = await res.json();
-  let assistantMsg: GroqMessage = completion.choices[0].message;
+  let completion = await res.json();
+  let assistantMsg: GroqMsg = completion.choices[0].message;
   let loops = 0;
 
-  // Si el modelo devolvió tool_calls, ejecutarlas
-  const rawMessages: GroqMessage[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
-    ...userMessages.map((m) => ({
-      role: m.role as GroqMessage['role'],
-      content: m.content,
-    })),
-  ];
-
+  // Loop de herramientas
   while (assistantMsg.tool_calls?.length && loops < 5) {
     loops++;
-    rawMessages.push(assistantMsg);
+    messages.push(assistantMsg);
 
     for (const tc of assistantMsg.tool_calls) {
       let fnArgs: Record<string, unknown> = {};
       try { fnArgs = JSON.parse(tc.function.arguments); } catch { /* */ }
-      const result = ejecutarToolLocal(tc.function.name, fnArgs);
-      rawMessages.push({
-        role: 'tool',
-        tool_call_id: tc.id,
-        content: JSON.stringify(result),
-      });
+      const data = ejecutarHerramienta(tc.function.name, fnArgs);
+      toolResults.push({ name: tc.function.name, data });
+      messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(data) });
     }
 
-    const toolBody: Record<string, unknown> = {
-      model: 'llama-3.3-70b-versatile',
-      messages: rawMessages,
-      max_tokens: 1024,
-      temperature: 0.7,
-      tools: TOOL_DEFS,
-    };
-
-    const toolRes = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+    res = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(toolBody),
+      headers: { Authorization: `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages, max_tokens: 1024, temperature: 0.7, tools: TOOLS }),
     });
 
-    if (!toolRes.ok) {
-      const err = await toolRes.text();
-      console.error(`[Ceci] Tool loop error:`, err.slice(0, 200));
-      break;
-    }
+    if (!res.ok) { console.error('[Ceci] Tool loop error'); break; }
 
-    const toolCompletion = await toolRes.json();
-    assistantMsg = toolCompletion.choices[0].message;
+    completion = await res.json();
+    assistantMsg = completion.choices[0].message;
   }
 
-  return assistantMsg.content ?? 'Lo siento, no pude procesar tu consulta. ¿Podrías intentarlo de nuevo?';
+  const rawText = assistantMsg.content ?? '';
+  // Limpiar artefactos de function call que el modelo a veces filtra en el texto
+  const text = rawText
+    .replace(/<function=\w+>\s*\{[^}]*\}\s*<\/function>/gi, '')
+    .replace(/<function=\w+>.*?<\/function>/gis, '')
+    .trim()
+    || 'Lo siento, no pude procesar tu consulta. ¿Podrías intentarlo de nuevo?';
+  const actions = extraerCards(toolResults);
+
+  return { text, actions: actions.length > 0 ? actions : undefined };
 }
 
-// ──────────────── Real API (Edge Function) ────────────────
+// ──────────────── Edge Function (prod) ────────────────
 
 const EDGE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_CHATBOT_URL as string;
 
 async function callEdgeFunction(messages: { role: string; content: string }[]): Promise<{ reply: string }> {
-  if (!EDGE_FUNCTION_URL) {
-    throw new Error('VITE_SUPABASE_CHATBOT_URL no está configurada');
-  }
+  if (!EDGE_FUNCTION_URL) throw new Error('VITE_SUPABASE_CHATBOT_URL no está configurada');
 
-  const response = await fetch(EDGE_FUNCTION_URL, {
+  const res = await fetch(EDGE_FUNCTION_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Error al llamar al chatbot: ${response.status}`);
-  }
-
-  return response.json();
+  if (!res.ok) throw new Error(`Error al llamar al chatbot: ${res.status}`);
+  return res.json();
 }
 
 // ──────────────── Public API ────────────────
 
 const USE_GROQ_DIRECT = Boolean(GROQ_API_KEY);
 
-/** Intenciones que requieren datos precisos del catálogo → usar mock engine */
-const DATA_INTENTS = new Set(['catalogo', 'curso', 'precio', 'temario']);
-
 export const chatbotService = {
   async sendMessage(text: string): Promise<void> {
     const store = useChatStore.getState();
     store.addMessage({ role: 'user', text });
-
     store.setTyping(true);
 
     try {
@@ -677,62 +352,42 @@ export const chatbotService = {
       let replyActions: ChatAction[] | undefined;
 
       if (USE_GROQ_DIRECT) {
-        const intent = classifyIntentMock(text);
-
-        if (DATA_INTENTS.has(intent)) {
-          const result = await generateMockResponse(text, store.messages, store.context);
-          await delay(500 + Math.random() * 400);
-          reply = result.text;
-          replyActions = result.actions;
-        } else {
-          const messages = store.messages.map((m) => ({
-            role: m.role === 'user' ? 'user' : 'assistant',
-            content: m.text,
-          }));
-          messages.push({ role: 'user', content: text });
-          reply = await enviarAGroq(messages);
-        }
-      } else if (USE_MOCKS) {
-        const result = await generateMockResponse(text, store.messages, store.context);
-        await delay(600 + Math.random() * 600);
-        reply = result.text;
-        replyActions = result.actions;
-      } else {
         const messages = store.messages.map((m) => ({
           role: m.role === 'user' ? 'user' : 'assistant',
           content: m.text,
         }));
         messages.push({ role: 'user', content: text });
 
+        const result = await enviarAGroq(messages);
+        reply = result.text;
+
+        if (result.actions?.length) {
+          replyActions = [{ type: 'courses', courses: result.actions }];
+        }
+      } else if (USE_MOCKS) {
+        reply = 'Hola 👋 Soy Ceci, la asesora virtual del CEE-FIIS. Estoy aquí para ayudarte con información sobre cursos, precios y certificaciones. ¿En qué tema te gustaría especializarte?';
+        await delay(600);
+      } else {
+        const messages = store.messages.map((m) => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: m.text,
+        }));
+        messages.push({ role: 'user', content: text });
         const result = await callEdgeFunction(messages);
         reply = result.reply;
       }
 
       store.addMessage({ role: 'bot', text: reply, actions: replyActions });
 
-      // Detectar menciones de WhatsApp / asesor en la respuesta y activar pulso
-      const lowerReply = reply.toLowerCase();
-      if (/whatsapp|\+51\s*9|asesor|humano|contactar|escr[ií]benos|ll[aá]manos/i.test(lowerReply)) {
+      // WhatsApp highlight si menciona asesor
+      if (/whatsapp|\+51\s*9|asesor|humano|contactar|escr[ií]benos/i.test(reply)) {
         useChatStore.getState().triggerWhatsAppHighlight();
-      }
-
-      if (
-        store.context.priceQueriesCount >= 3 &&
-        !store.context.hasCapturedLead
-      ) {
-        await delay(400);
-        store.addMessage({
-          role: 'bot',
-          text: '📬 **¿Te gustaría recibir información detallada?**\n\nDéjame tu correo corporativo y te envío el brochure completo con precios, estructura de cuotas y próximas fechas de inicio.',
-          actions: [{ type: 'lead_capture' }],
-        });
       }
     } catch (err) {
       console.error('[Ceci] Error:', err);
-      const msg = err instanceof Error ? err.message : String(err);
       store.addMessage({
         role: 'bot',
-        text: `Ups, tuve un problema al procesar tu mensaje. Error: ${msg.slice(0, 80)}. ¿Podrías intentarlo de nuevo?`,
+        text: 'Ups, tuve un problema al procesar tu mensaje. ¿Podrías intentarlo de nuevo?',
       });
     } finally {
       store.setTyping(false);
