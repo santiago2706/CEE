@@ -1,6 +1,16 @@
 import Groq from 'groq-sdk';
+import { ApiError, requireEnv } from './errors';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+// Construcción perezosa (ver _lib/supabase.ts para el motivo): así el error de
+// env var faltante cae dentro del try/catch del handler, no en el cold start.
+let client: Groq | undefined;
+
+function getGroq(): Groq {
+  if (!client) {
+    client = new Groq({ apiKey: requireEnv('GROQ_API_KEY') });
+  }
+  return client;
+}
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -100,15 +110,21 @@ ${categoryLines}
 
 Alertas detectadas (caídas mayores al 50% vs. mes anterior): ${anomalies.length ? anomalies.join('; ') : 'ninguna'}`;
 
-  const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: userContent },
-    ],
-    max_tokens: 200,
-    temperature: 0.4,
-  });
+  let response;
+  try {
+    response = await getGroq().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userContent },
+      ],
+      max_tokens: 200,
+      temperature: 0.4,
+    });
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError('groq_api_error', err instanceof Error ? err.message : 'Error al llamar a la API de Groq.');
+  }
 
   const raw = response.choices[0]?.message?.content?.trim() || 'No se pudo generar el resumen en este momento.';
   // Salvaguarda determinística: el modelo insiste en usar "$" pese a la

@@ -1,6 +1,16 @@
 import Groq from 'groq-sdk';
+import { ApiError, requireEnv } from './errors';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+// Construcción perezosa (ver _lib/supabase.ts para el motivo): así el error de
+// env var faltante cae dentro del try/catch del handler, no en el cold start.
+let client: Groq | undefined;
+
+function getGroq(): Groq {
+  if (!client) {
+    client = new Groq({ apiKey: requireEnv('GROQ_API_KEY') });
+  }
+  return client;
+}
 
 // Proxy delgado: reenvía tal cual la llamada de chat-completions (con tools/
 // tool_choice de SecretariaChat.tsx) a Groq. La ejecución de las tools sigue
@@ -11,8 +21,13 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 // de escritura (crear curso, registrar inscripción, emitir certificado) ni
 // la consulta de alumnos que sí usa SecretariaChat.tsx.
 
-export type ChatCompletionProxyRequest = Parameters<typeof groq.chat.completions.create>[0];
+export type ChatCompletionProxyRequest = Parameters<Groq['chat']['completions']['create']>[0];
 
 export async function forwardChatCompletion(payload: ChatCompletionProxyRequest) {
-  return groq.chat.completions.create(payload);
+  try {
+    return await getGroq().chat.completions.create(payload);
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError('groq_api_error', err instanceof Error ? err.message : 'Error al llamar a la API de Groq.');
+  }
 }

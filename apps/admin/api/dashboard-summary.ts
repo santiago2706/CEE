@@ -4,6 +4,7 @@ import {
   type DashboardSummaryKpis,
   type DashboardSummaryCategoryPoint,
 } from './_lib/dashboardSummaryService';
+import { ApiError } from './_lib/errors';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -28,6 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ summary });
   } catch (err) {
     console.error('[api/dashboard-summary] Error al generar el resumen:', err);
-    res.status(500).json({ error: 'No se pudo generar el resumen.' });
+    const code = err instanceof ApiError ? err.code : 'unknown_error';
+    const message = err instanceof ApiError ? err.message : 'No se pudo generar el resumen.';
+    res.status(500).json({ error: message, code });
   }
 }

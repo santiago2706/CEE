@@ -1,7 +1,17 @@
 import Groq from 'groq-sdk';
-import { supabase } from './supabase';
+import { getSupabase } from './supabase';
+import { ApiError, requireEnv } from './errors';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+// Construcción perezosa (ver _lib/supabase.ts para el motivo): así el error de
+// env var faltante cae dentro del try/catch del handler, no en el cold start.
+let client: Groq | undefined;
+
+function getGroq(): Groq {
+  if (!client) {
+    client = new Groq({ apiKey: requireEnv('GROQ_API_KEY') });
+  }
+  return client;
+}
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -139,16 +149,22 @@ async function resolveDataContext(question: string, historyMessages: HistoryMess
     return cached;
   }
 
-  const sqlResponse = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: [
-      { role: 'system', content: SQL_SYSTEM_PROMPT },
-      ...historyMessages,
-      { role: 'user', content: question },
-    ],
-    max_tokens: 256,
-    temperature: 0.1,
-  });
+  let sqlResponse;
+  try {
+    sqlResponse = await getGroq().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: SQL_SYSTEM_PROMPT },
+        ...historyMessages,
+        { role: 'user', content: question },
+      ],
+      max_tokens: 256,
+      temperature: 0.1,
+    });
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError('groq_api_error', err instanceof Error ? err.message : 'Error al llamar a la API de Groq.');
+  }
 
   const rawSQL = sqlResponse.choices[0]?.message?.content ?? '';
   const sql = extractSQL(rawSQL);
@@ -165,7 +181,22 @@ async function resolveDataContext(question: string, historyMessages: HistoryMess
       console.warn('[chatService] SQL rechazado por validación:', validation.reason, '| SQL:', sql);
       dataContext = '';
     } else {
-      const { data, error } = await supabase.rpc('execute_query', { query_text: sql });
+      // getSupabase() puede lanzar ApiError('missing_env_var', ...) si falta
+      // configuración — eso debe propagarse (no degradar el chat en silencio).
+      // Un fallo de conectividad real en la llamada RPC en sí (no un error de
+      // query, que Supabase-js devuelve como {error} sin lanzar) sí se trata
+      // como degradación suave, igual que antes.
+      const client = getSupabase();
+      let data: unknown;
+      let error: { message: string } | null;
+      try {
+        ({ data, error } = await client.rpc('execute_query', { query_text: sql }));
+      } catch (err) {
+        throw new ApiError(
+          'supabase_connection_failed',
+          err instanceof Error ? err.message : 'No se pudo conectar con Supabase.',
+        );
+      }
 
       if (error) {
         console.error('[chatService] execute_query error:', error.message, '| SQL:', sql);
@@ -210,12 +241,18 @@ export async function chatWithData(question: string, history: Message[]): Promis
 
   const dataContext = await resolveDataContext(question, historyMessages);
 
-  const finalResponse = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: buildFinalMessages(question, historyMessages, dataContext),
-    max_tokens: 512,
-    temperature: 0.4,
-  });
+  let finalResponse;
+  try {
+    finalResponse = await getGroq().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: buildFinalMessages(question, historyMessages, dataContext),
+      max_tokens: 512,
+      temperature: 0.4,
+    });
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError('groq_api_error', err instanceof Error ? err.message : 'Error al llamar a la API de Groq.');
+  }
 
   return (
     finalResponse.choices[0]?.message?.content ??
