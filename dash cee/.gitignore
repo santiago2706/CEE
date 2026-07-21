@@ -1,0 +1,15 @@
+# Credenciales 
+.env
+google_credentials.json
+
+# Sesiones de navegador guardadas (login de redes sociales)
+edge_session_data/
+edge_session_data_linkedin/
+
+# Entorno virtual de Python
+.venv/
+venv/
+
+# Cache de Python
+__pycache__/
+*.pyc
